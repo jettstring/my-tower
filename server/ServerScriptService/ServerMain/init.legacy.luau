@@ -3,8 +3,7 @@ local Services = script:WaitForChild("Services")
 
 local loadOrder = {
 	{"DataService", require(Services.DataService) },
-	{"PlotService", require(Services.PlotService) },
-	{"BuildService", require(Services.BuildService) },
+	{"TowerService", require(Services.TowerService) },
 }
 
 -- Build named lookup

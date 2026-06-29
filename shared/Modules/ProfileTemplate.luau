@@ -1,10 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local GameAssets = ReplicatedStorage.GameAssets
-local BuildUtil = require(GameAssets.BuildAssets.BuildUtil)
-
 local ProfileTemplate = {
-	PlotData = {} :: PlotData,
+	TowerData = {} :: TowerData,
 }
 
 export type ProfileTemplate = typeof(ProfileTemplate) 
@@ -13,12 +10,24 @@ export type ProfileTemplate = typeof(ProfileTemplate)
 export type SerializedRoom = {
 	id: string,
 	roomName: string,
-	floor: number, -- floor number room sits on
-	positionStartIndex: number, -- signed integer representing position along floor x axis
+	column: number,
+	floor: number,
 }
 
-export type PlotData = {
-	placedRooms: { SerializedRoom }
+export type ElevatorData = {
+	speedLevel: number,
+	elevatorSkin: string?,
+}
+
+export type ColumnData = {
+	elevator: ElevatorData,
+	lobbyOccupants: {},
+	lobbySkin: string?,
+}
+
+export type TowerData = {
+	rooms: { SerializedRoom },
+	columns: {[number]: ColumnData}
 }
 
 return ProfileTemplate

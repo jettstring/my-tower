@@ -36,21 +36,6 @@
           "pluginManaged": true,
           "children": [
             {
-              "name": "PlotAssets",
-              "className": "Folder",
-              "pluginManaged": true,
-              "children": [
-                {
-                  "name": "Plot",
-                  "className": "ModuleScript",
-                  "pluginManaged": true,
-                  "filePaths": [
-                    "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/shared/GameAssets/PlotAssets/Plot.luau"
-                  ]
-                }
-              ]
-            },
-            {
               "name": "NPCs",
               "className": "Folder",
               "pluginManaged": true,
@@ -74,7 +59,69 @@
               ]
             },
             {
-              "name": "BuildAssets",
+              "name": "TowerAssets",
+              "className": "Folder",
+              "pluginManaged": true,
+              "children": [
+                {
+                  "name": "Tower",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/shared/GameAssets/TowerAssets/Tower.luau"
+                  ]
+                },
+                {
+                  "name": "Lobby",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/shared/GameAssets/TowerAssets/Lobby.luau"
+                  ]
+                },
+                {
+                  "name": "RoomObjects",
+                  "className": "Folder",
+                  "pluginManaged": true,
+                  "children": [
+                    {
+                      "name": "ResidentialRoom",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/shared/GameAssets/TowerAssets/RoomObjects/ResidentialRoom.luau"
+                      ]
+                    },
+                    {
+                      "name": "CommercialRoom",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/shared/GameAssets/TowerAssets/RoomObjects/CommercialRoom.luau"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Column",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/shared/GameAssets/TowerAssets/Column.luau"
+                  ]
+                },
+                {
+                  "name": "Elevator",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/shared/GameAssets/TowerAssets/Elevator.luau"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "RoomAssets",
               "className": "Folder",
               "pluginManaged": true,
               "children": [
@@ -83,23 +130,22 @@
                   "className": "ModuleScript",
                   "pluginManaged": true,
                   "filePaths": [
-                    "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/shared/GameAssets/BuildAssets/RoomDefinitions.luau"
+                    "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/shared/GameAssets/RoomAssets/RoomDefinitions.luau"
                   ]
-                },
+                }
+              ]
+            },
+            {
+              "name": "ElevatorAssets",
+              "className": "Folder",
+              "pluginManaged": true,
+              "children": [
                 {
-                  "name": "Placer",
+                  "name": "ElevatorSkinDefinitions",
                   "className": "ModuleScript",
                   "pluginManaged": true,
                   "filePaths": [
-                    "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/shared/GameAssets/BuildAssets/Placer.luau"
-                  ]
-                },
-                {
-                  "name": "BuildUtil",
-                  "className": "ModuleScript",
-                  "pluginManaged": true,
-                  "filePaths": [
-                    "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/shared/GameAssets/BuildAssets/BuildUtil.luau"
+                    "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/shared/GameAssets/ElevatorAssets/ElevatorSkinDefinitions.luau"
                   ]
                 }
               ]
@@ -1917,27 +1963,19 @@
                   "pluginManaged": true,
                   "children": [
                     {
-                      "name": "PlotController",
-                      "className": "ModuleScript",
-                      "pluginManaged": true,
-                      "filePaths": [
-                        "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/client/StarterPlayerScripts/ClientMain/Controllers/PlotController.luau"
-                      ]
-                    },
-                    {
-                      "name": "BuildController",
-                      "className": "ModuleScript",
-                      "pluginManaged": true,
-                      "filePaths": [
-                        "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/client/StarterPlayerScripts/ClientMain/Controllers/BuildController.luau"
-                      ]
-                    },
-                    {
                       "name": "NotificationController",
                       "className": "ModuleScript",
                       "pluginManaged": true,
                       "filePaths": [
                         "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/client/StarterPlayerScripts/ClientMain/Controllers/NotificationController.luau"
+                      ]
+                    },
+                    {
+                      "name": "TowerController",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/client/StarterPlayerScripts/ClientMain/Controllers/TowerController.luau"
                       ]
                     }
                   ]
@@ -1975,19 +2013,11 @@
                   ]
                 },
                 {
-                  "name": "PlotService",
+                  "name": "TowerService",
                   "className": "ModuleScript",
                   "pluginManaged": true,
                   "filePaths": [
-                    "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/server/ServerScriptService/ServerMain/Services/PlotService.luau"
-                  ]
-                },
-                {
-                  "name": "BuildService",
-                  "className": "ModuleScript",
-                  "pluginManaged": true,
-                  "filePaths": [
-                    "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/server/ServerScriptService/ServerMain/Services/BuildService.luau"
+                    "c:/Users/jstri/Documents/Development/Projects/BuildAHotel/code/server/ServerScriptService/ServerMain/Services/TowerService.luau"
                   ]
                 },
                 {

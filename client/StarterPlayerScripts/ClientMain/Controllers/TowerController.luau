@@ -9,13 +9,10 @@ local Signal = require(ReplicatedStorage.Packages.Signal)
 
 local player = Players.LocalPlayer
 
-
-local PlotsFolder = workspace:WaitForChild("Plots")
-
--- Plot Assets
+-- Tower Assets
+local TowersFolder = workspace.PlayerTowers
 local GameAssets = ReplicatedStorage:WaitForChild("GameAssets")
-local PlotAssets = GameAssets.PlotAssets
-local Plot = require(PlotAssets.Plot)
+local TowerAssets = GameAssets.TowerAssets
 
 
 local remotesFolder = ReplicatedStorage:WaitForChild("Remotes")
@@ -31,10 +28,10 @@ local remotes = {
 --------------------------------------------------
 -- STATE --
 --------------------------------------------------
-local PlotController = {}
-PlotController.Controllers = {}
-PlotController.Signals = {
-	PlotAssigned = Signal.new(),
+local TowerController = {}
+TowerController.Controllers = {}
+TowerController.Signals = {
+	TowerAssigned = Signal.new(),
 }
 
 --------------------------------------------------
@@ -47,56 +44,56 @@ PlotController.Signals = {
 -- PRIVATE FUNCTIONS --
 --------------------------------------------------
 
-local function _setupPlot()
-	local plotFolder = PlotController:GetPlotFolder()
-	if not plotFolder then
-		warn("[_setupPlot] No plot folder found")
+local function _setup()
+	local towerFolder = TowerController:GetTowerFolder()
+	if not towerFolder then
+		warn("[_setup] No tower folder found")
 		return
 	end
 	
 	
-	-- fire plot assignment signal
-	PlotController.Signals.PlotAssigned:Fire()
+	-- fire tower assignment signal
+	TowerController.Signals.TowerAssigned:Fire()
 	
-	print(plotFolder)
+	print(towerFolder)
 end
 
 --------------------------------------------------
 -- PUBLIC FUNCTIONS --
 --------------------------------------------------
 
-function PlotController:GetPlotFolder(): Folder
-	local plotAssigned: number = player:GetAttribute("PlotAssigned")
-	if not plotAssigned then
-		warn("[GetPlotFolder] No plot number assigned")
+function TowerController:GetTowerFolder(): Folder
+	local towerAssigned: number = player:GetAttribute("TowerAssigned")
+	if not towerAssigned then
+		warn("[GetTowerFolder] No tower number assigned")
 		return
 	end
 	
-	local plotFolder = PlotsFolder:FindFirstChild(tostring(plotAssigned))
-	if not plotFolder then
-		warn("[GetPlotFolder] No plot folder found for", plotAssigned)
+	local towerFolder = TowersFolder:FindFirstChild(tostring(towerAssigned))
+	if not towerFolder then
+		warn("[GetTowerFolder] No tower folder found for", towerAssigned)
 	end
 	
-	return plotFolder
+	return towerFolder
 end
 
 --------------------------------------------------
 -- MAIN --
 --------------------------------------------------
 
-function PlotController:Init(controllers)
+function TowerController:Init(controllers)
 	self.Controllers = controllers
 
 end
 
-function PlotController:Start()
-	-- wait for plot to be assigned
-	player:GetAttributeChangedSignal("PlotAssigned"):Connect(_setupPlot)
-	if player:GetAttribute("PlotAssigned") then _setupPlot() end
+function TowerController:Start()
+	-- wait for tower to be assigned
+	player:GetAttributeChangedSignal("TowerAssigned"):Connect(_setup)
+	if player:GetAttribute("TowerAssigned") then _setup() end
 		
 	
 	
 end
 
 
-return PlotController
+return TowerController
