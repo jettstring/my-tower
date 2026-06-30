@@ -20,6 +20,7 @@ local BuildUtil = require(BuildAssets.BuildUtil)
 local TowersFolder = workspace.PlayerTowers
 local TowerAssets = GameAssets.TowerAssets
 local RoomObjects = TowerAssets.RoomObjects
+local Column = require(TowerAssets.Column)
 
 -- Room Assets
 local RoomAssets = GameAssets.RoomAssets
@@ -36,6 +37,8 @@ type TowerData = ProfileTemplate.TowerData
 type ColumnData = ProfileTemplate.ColumnData
 type ElevatorData = ProfileTemplate.ElevatorData
 type SerializedRoom = ProfileTemplate.SerializedRoom
+
+type Column = Column.Column
 
 --------------------------------------------------
 -- MAIN -- 
@@ -105,6 +108,12 @@ end
 
 
 function Tower:_SetupColumns(towerData: TowerData)
+	for columnIndex, columnData: ColumnData in towerData.Columns do
+		local column = Column.new(self, columnIndex, columnData, self.Services)
+		if not column then warn("[_SetupColumns] Failed to create column", columnIndex) return end
+		self.Columns[columnIndex] = column
+	end
+	
 	
 end
 

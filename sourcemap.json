@@ -51,53 +51,6 @@
       ]
     },
     {
-      "name": "StarterPlayer",
-      "className": "StarterPlayer",
-      "pluginManaged": true,
-      "children": [
-        {
-          "name": "StarterPlayerScripts",
-          "className": "StarterPlayerScripts",
-          "pluginManaged": true,
-          "children": [
-            {
-              "name": "ClientMain",
-              "className": "LocalScript",
-              "pluginManaged": true,
-              "filePaths": [
-                "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/ClientMain/init.local.luau"
-              ],
-              "children": [
-                {
-                  "name": "Controllers",
-                  "className": "Folder",
-                  "pluginManaged": true,
-                  "children": [
-                    {
-                      "name": "TowerController",
-                      "className": "ModuleScript",
-                      "pluginManaged": true,
-                      "filePaths": [
-                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/ClientMain/Controllers/TowerController.luau"
-                      ]
-                    },
-                    {
-                      "name": "NotificationController",
-                      "className": "ModuleScript",
-                      "pluginManaged": true,
-                      "filePaths": [
-                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/ClientMain/Controllers/NotificationController.luau"
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "ReplicatedStorage",
       "className": "ReplicatedStorage",
       "pluginManaged": true,
@@ -2026,6 +1979,432 @@
                   "pluginManaged": true,
                   "filePaths": [
                     "c:/Users/jstri/Documents/Development/Projects/MyTower/code/shared/GameAssets/ElevatorAssets/ElevatorSkinDefinitions.luau"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "StarterPlayer",
+      "className": "StarterPlayer",
+      "pluginManaged": true,
+      "children": [
+        {
+          "name": "StarterPlayerScripts",
+          "className": "StarterPlayerScripts",
+          "pluginManaged": true,
+          "children": [
+            {
+              "name": "ClientMain",
+              "className": "LocalScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/ClientMain/init.local.luau"
+              ],
+              "children": [
+                {
+                  "name": "Controllers",
+                  "className": "Folder",
+                  "pluginManaged": true,
+                  "children": [
+                    {
+                      "name": "TowerController",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/ClientMain/Controllers/TowerController.luau"
+                      ]
+                    },
+                    {
+                      "name": "NotificationController",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/ClientMain/Controllers/NotificationController.luau"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "PlayerModule",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/init.luau"
+              ],
+              "children": [
+                {
+                  "name": "ControlModule",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/ControlModule/init.luau"
+                  ],
+                  "children": [
+                    {
+                      "name": "VehicleController",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/ControlModule/VehicleController.luau"
+                      ]
+                    },
+                    {
+                      "name": "ClickToMoveController",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/ControlModule/ClickToMoveController.luau"
+                      ]
+                    },
+                    {
+                      "name": "PathDisplay",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/ControlModule/PathDisplay.luau"
+                      ]
+                    },
+                    {
+                      "name": "VRNavigation",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/ControlModule/VRNavigation.luau"
+                      ]
+                    },
+                    {
+                      "name": "AvatarAbilitiesInterface",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/ControlModule/AvatarAbilitiesInterface.luau"
+                      ]
+                    },
+                    {
+                      "name": "BaseCharacterController",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/ControlModule/BaseCharacterController.luau"
+                      ]
+                    },
+                    {
+                      "name": "Gamepad",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/ControlModule/Gamepad.luau"
+                      ]
+                    },
+                    {
+                      "name": "TouchJump",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/ControlModule/TouchJump.luau"
+                      ]
+                    },
+                    {
+                      "name": "TouchThumbstick",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/ControlModule/TouchThumbstick.luau"
+                      ]
+                    },
+                    {
+                      "name": "ClickToMoveDisplay",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/ControlModule/ClickToMoveDisplay.luau"
+                      ]
+                    },
+                    {
+                      "name": "Keyboard",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/ControlModule/Keyboard.luau"
+                      ]
+                    },
+                    {
+                      "name": "DynamicThumbstick",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/ControlModule/DynamicThumbstick.luau"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "CameraModule",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/init.luau"
+                  ],
+                  "children": [
+                    {
+                      "name": "VehicleCamera",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/VehicleCamera/init.luau"
+                      ],
+                      "children": [
+                        {
+                          "name": "VehicleCameraConfig",
+                          "className": "ModuleScript",
+                          "pluginManaged": true,
+                          "filePaths": [
+                            "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/VehicleCamera/VehicleCameraConfig.luau"
+                          ]
+                        },
+                        {
+                          "name": "VehicleCameraCore",
+                          "className": "ModuleScript",
+                          "pluginManaged": true,
+                          "filePaths": [
+                            "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/VehicleCamera/VehicleCameraCore.luau"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "ZoomController",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/ZoomController/init.luau"
+                      ],
+                      "children": [
+                        {
+                          "name": "Popper",
+                          "className": "ModuleScript",
+                          "pluginManaged": true,
+                          "filePaths": [
+                            "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/ZoomController/Popper.luau"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "VRBaseCamera",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/VRBaseCamera.luau"
+                      ]
+                    },
+                    {
+                      "name": "CameraToggleStateController",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/CameraToggleStateController.luau"
+                      ]
+                    },
+                    {
+                      "name": "VRVehicleCamera",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/VRVehicleCamera.luau"
+                      ]
+                    },
+                    {
+                      "name": "LegacyCamera",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/LegacyCamera.luau"
+                      ]
+                    },
+                    {
+                      "name": "OrbitalCamera",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/OrbitalCamera.luau"
+                      ]
+                    },
+                    {
+                      "name": "ClassicCamera",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/ClassicCamera.luau"
+                      ]
+                    },
+                    {
+                      "name": "CameraUtils",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/CameraUtils.luau"
+                      ]
+                    },
+                    {
+                      "name": "Poppercam",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/Poppercam.luau"
+                      ]
+                    },
+                    {
+                      "name": "CameraUI",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/CameraUI.luau"
+                      ]
+                    },
+                    {
+                      "name": "BaseOcclusion",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/BaseOcclusion.luau"
+                      ]
+                    },
+                    {
+                      "name": "MouseLockController",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/MouseLockController.luau"
+                      ]
+                    },
+                    {
+                      "name": "TransparencyController",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/TransparencyController.luau"
+                      ]
+                    },
+                    {
+                      "name": "CameraInput",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/CameraInput.luau"
+                      ]
+                    },
+                    {
+                      "name": "Invisicam",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/Invisicam.luau"
+                      ]
+                    },
+                    {
+                      "name": "VRCamera",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/VRCamera.luau"
+                      ]
+                    },
+                    {
+                      "name": "BaseCamera",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CameraModule/BaseCamera.luau"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "CommonUtils",
+                  "className": "Folder",
+                  "pluginManaged": true,
+                  "children": [
+                    {
+                      "name": "CameraWrapper.spec",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CommonUtils/CameraWrapper.spec.luau"
+                      ]
+                    },
+                    {
+                      "name": "FlagUtil",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CommonUtils/FlagUtil.luau"
+                      ]
+                    },
+                    {
+                      "name": "ConnectionUtil.spec",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CommonUtils/ConnectionUtil.spec.luau"
+                      ]
+                    },
+                    {
+                      "name": "CameraWrapper",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CommonUtils/CameraWrapper.luau"
+                      ]
+                    },
+                    {
+                      "name": "ConnectionUtil",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CommonUtils/ConnectionUtil.luau"
+                      ]
+                    },
+                    {
+                      "name": "CharacterUtil",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerModule/CommonUtils/CharacterUtil.luau"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "PlayerScriptsLoader",
+              "className": "LocalScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/PlayerScriptsLoader.local.luau"
+              ]
+            },
+            {
+              "name": "RbxCharacterSounds",
+              "className": "LocalScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/RbxCharacterSounds/init.local.luau"
+              ],
+              "children": [
+                {
+                  "name": "AtomicBinding",
+                  "className": "ModuleScript",
+                  "pluginManaged": true,
+                  "filePaths": [
+                    "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/RbxCharacterSounds/AtomicBinding.luau"
                   ]
                 }
               ]

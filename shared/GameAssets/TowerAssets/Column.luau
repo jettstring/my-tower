@@ -19,7 +19,6 @@ local BuildUtil = require(BuildAssets.BuildUtil)
 -- Tower Assets
 local TowersFolder = workspace.PlayerTowers
 local TowerAssets = GameAssets.TowerAssets
-local Tower = require(TowerAssets.Tower)
 local Elevator = require(TowerAssets.Elevator)
 local Lobby = require(TowerAssets.Lobby)
 
@@ -41,6 +40,7 @@ type SerializedRoom = ProfileTemplate.SerializedRoom
 
 type Tower = Tower.Tower
 type Lobby = Lobby.Lobby
+type Elevator = Elevator.Elevator
 
 --------------------------------------------------
 -- MAIN -- 
@@ -51,6 +51,16 @@ Column.__index = Column
 
 function Column.new(tower: Tower, columnIndex: number, columnData: ColumnData, services)
 	local self = setmetatable({}, Column)
+	self.Services = services
+	self.Trove = Trove.new()
+	
+	self.Tower = tower
+	self.ColumnIndex = columnIndex
+	self.ColumnData = columnData
+
+	
+	self.Lobby = Lobby.new(self, columnData, services)
+	self.Elevator = Elevator.new(self, columnData, services)
 	
 	return self
 end
