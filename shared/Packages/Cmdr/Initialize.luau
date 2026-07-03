@@ -30,8 +30,10 @@ return function (cmdr)
 	cmdr.RemoteEvent = RemoteEvent
 
 	cmdr:RegisterTypesIn(script.Parent.BuiltInTypes)
-
+	cmdr:RegisterTypesIn(script.Parent.CustomTypes)
+	
 	script.Parent.BuiltInTypes:Destroy()
+	script.Parent.CustomTypes:Destroy()
 	script.Parent.BuiltInCommands.Name = "Server commands"
 
 	if StarterGui:FindFirstChild("Cmdr") == nil then

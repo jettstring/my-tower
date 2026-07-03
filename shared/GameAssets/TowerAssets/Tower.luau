@@ -106,7 +106,7 @@ end
 
 
 function Tower:_SetupColumns(towerData: TowerData)
-	for columnIndex, columnData: ColumnData in towerData.Columns do
+	for columnIndex, columnData: ColumnData in towerData.columns do
 		local column = Column.new(self, columnIndex, columnData, self.Services)
 		if not column then warn("[_SetupColumns] Failed to create column", columnIndex) return end
 		self.Columns[columnIndex] = column

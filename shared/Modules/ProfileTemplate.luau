@@ -2,6 +2,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local ProfileTemplate = {
 	
+	Money = 1000,
+	
 	TowerData = {
 		rooms = {},
 		columns = {
