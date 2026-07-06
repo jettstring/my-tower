@@ -27,38 +27,52 @@ export type RoomType = {
 	rooms: { [string]: RoomDefinition },
 }
 
-local ResidentialRooms: {[string]: Residential} = {
-	
-	["Rustic Apartments"] = {
-		roomType = "Residential",
-		displayName = "Rustic Apartments",
-		displayImage = "",
+
+
+local Rooms: { [string]: RoomType } = {
+
+	Residential = {
+		displayName = "Residential",
+		rooms = {
+			["Rustic Apartments"] = {
+				roomType = "Residential",
+				displayName = "Rustic Apartments",
+				displayImage = "",
+			},
+
+			["Modern Apartments"] = {
+				roomType = "Residential",
+				displayName = "Modern Apartments",
+				displayImage = "",
+			},
+		}
 	},
-	
-	["Modern Apartments"] = {
-		roomType = "Residential",
-		displayName = "Modern Apartments",
-		displayImage = "",
-	},
-	
+
+	Commercial = {
+		displayName = "Commercial",
+		rooms = {
+			
+			["Rustic Apartments"] = {
+				roomType = "Residential",
+				displayName = "Rustic Apartments",
+				displayImage = "",
+				catagory = "Food",
+			},
+
+		}
+	}
 }
 
-local CommercialRooms: {[string]: Residential} = {
 
-}
-
-local ByRoomType: { [string]: RoomType } = {
-	
-}
 
 local ByName = {}
-for _, group in ByRoomType do
+for _, group in Rooms do
 	for name, def in group.rooms do
 		ByName[name] = def
 	end
 end
 
 return {
-	ByRoomType = ByRoomType,
+	ByRoomType = Rooms,
 	ByName = ByName,
 }

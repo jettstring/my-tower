@@ -5,7 +5,16 @@ local ProfileTemplate = {
 	Money = 1000,
 	
 	TowerData = {
-		rooms = {},
+		rooms = {
+			{
+				id = "firstRoomEva",
+				roomDefKey = "Rustic Apartments",
+				column = 1,
+				floor = 1,
+				customName = nil,
+				customRoomColors = nil,
+			}	
+		},
 		columns = {
 			[1] = {
 				elevatorData = {

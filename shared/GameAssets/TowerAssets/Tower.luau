@@ -69,6 +69,7 @@ function Tower.new(ownerPlayer: Player, TowerFolder: Folder, services: any)
 		return nil
 	end
 
+	print("[Tower] Created tower:", self)
 	return self
 end
 
@@ -142,6 +143,11 @@ function Tower:AddRoom(serializedRoom: SerializedRoom)
 	local roomDef: RoomDefinition = RoomDefinitions.ByName[serializedRoom.roomDefKey]
 	local roomModule = RoomObjects:FindFirstChild(roomDef.roomType)
 	
+	if not roomModule then
+		warn("[AddRoom] No room module found for type:", roomDef.roomType)
+		return
+	end
+	
 	if self.Rooms[roomId] then
 		warn("[AddRoom] roomID already exists:", roomId, "for", serializedRoom)
 		return
@@ -152,6 +158,8 @@ function Tower:AddRoom(serializedRoom: SerializedRoom)
 		warn("[AddRoom] Failed to create room:", serializedRoom)
 		return
 	end	
+	
+	self.Trove:Add(room)
 	
 	-- track room
 	self.Rooms[roomId] = room
