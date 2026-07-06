@@ -17,7 +17,13 @@ local TowerAssets = GameAssets.TowerAssets
 
 local remotesFolder = ReplicatedStorage:WaitForChild("Remotes")
 local remotes = {
-	
+	ConstructRoom = remotesFolder.Tower.ConstructRoom,
+	BuildRoom = remotesFolder.Tower.BuildRoom,
+	DemolishRoom = remotesFolder.Tower.DemolishRoom,
+
+
+	-- RFs
+	GetTower = remotesFolder.Tower.GetTower,
 }
 
 --------------------------------------------------
@@ -58,6 +64,33 @@ local function _setup()
 	print(towerFolder)
 end
 
+local function _setupTowers()
+	for i = 1, #TowersFolder:GetChildren() do
+		local towerFolder = TowersFolder:FindFirstChild(tostring(i))
+		if not towerFolder then warn("[_setupTowers] No tower folder found for", i) continue end
+		
+		local towerModel = towerFolder:WaitForChild("Tower")
+		if not towerModel then warn("[_setupTowers] No tower model found for", towerFolder) continue end
+		
+		local componentsFolder = towerModel:WaitForChild("Components")
+		
+		-- Setup columns / rooms
+		local columnsFolder = towerModel:WaitForChild("Columns")
+		local roomsFolder = componentsFolder:WaitForChild("Rooms")
+		for _, columnContainer in columnsFolder:GetChildren() do
+
+			-- rooms
+			local roomsContainer = columnContainer:WaitForChild("Rooms")
+			for _, roomModel in roomsContainer:GetChildren() do
+				
+			end
+			
+			-- lobby
+			local lobby = columnContainer:WaitForChild("Lobby")
+		end
+	end
+end
+
 --------------------------------------------------
 -- PUBLIC FUNCTIONS --
 --------------------------------------------------
@@ -90,7 +123,8 @@ function TowerController:Start()
 	-- wait for tower to be assigned
 	player:GetAttributeChangedSignal("TowerAssigned"):Connect(_setup)
 	if player:GetAttribute("TowerAssigned") then _setup() end
-		
+	
+	
 	
 	
 end
