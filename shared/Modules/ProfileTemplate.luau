@@ -9,10 +9,18 @@ local ProfileTemplate = {
 			{
 				id = "firstRoomEva",
 				roomDefKey = "Rustic Apartments",
+				state = "Occupied",
 				column = 1,
 				floor = 1,
 				customName = nil,
 				customRoomColors = nil,
+			},
+			{
+				id = "secondRoom",
+				roomDefKey = nil,
+				state = "Empty",
+				column = 1,
+				floor = 2,
 			}	
 		},
 		columns = {
@@ -39,18 +47,13 @@ export type SerializedRoom = {
 	roomDefKey: string, -- room def key
 	column: number,
 	floor: number,
-
+	state: "Constructing" | "Empty" | "Occupied",
 	
-	customName: string,
-	customRoomColors: {[string]: Color3},
+	-- construction
+	constructionTime: number?,
 	
-}
-
-export type ConstructionCell = {
-	floor: number,
-	column: number,
-	state: "Constructing" | "Empty",
-	constructionTime: number,
+	customName: string?,
+	customRoomColors: {[string]: Color3}?,
 }
 
 export type ElevatorData = {

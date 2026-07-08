@@ -53,28 +53,50 @@ function Column.new(tower, columnIndex: number, columnData: ColumnData, services
 	self.Tower = tower
 	self.ColumnIndex = columnIndex
 	self.ColumnData = columnData
-
-
-	self:_SetupLobby()
-	self:_SetupElevator()
+	
+	self.Lobby = Lobby.new(self, self.ColumnData, self.Services)
+	self.Elevator = Elevator.new(self, self.ColumnData, self.Services)
+	self.Trove:Add(self.Lobby)
+	self.Trove:Add(self.Elevator)
+	
 
 	print("[Column] Created column:", self)
 	return self
 end
 
-function Column:_SetupLobby()
-	local lobby: Lobby = Lobby.new(self, self.ColumnData, self.Services)
-	if not lobby then warn("[_SetupLobby] Failed to create lobby") return end
-	self.Lobby = lobby
+
+--------------------------------------------------
+-- HELPERS -- 
+--------------------------------------------------
+
+function Column:Refresh()
+	
+end
+
+function Column:GetColumnRooms(): {}
+	local columnIndex = self.ColumnIndex
+	
+	local columnRooms = {}
+	for _, room in self.Tower.Rooms do
+		if room.RoomData and room.RoomData.column == columnIndex then
+			table.insert(columnRooms, room)
+		end
+	end
+	
+	table.sort(columnRooms, function(a, b)
+		return a.RoomData.floor < b.RoomData.floor
+	end)
+
+	return columnRooms
 end
 
 
-function Column:_SetupElevator()
-	local elevator: Elevator = Elevator.new(self, self.ColumnData, self.Services)
-	if not elevator then warn("[_SetupElevator] Failed to create elevator") return end
-	self.Elevator = elevator
-end
-
-export type Column = typeof(setmetatable({} :: {}, Column))
+export type Column = typeof(setmetatable({} :: {
+	ColumnData: ColumnData,
+	ColumnIndex: number,
+	Tower: any,
+	Lobby: Lobby,
+	Elevator: Elevator,
+}, Column))
 
 return Column

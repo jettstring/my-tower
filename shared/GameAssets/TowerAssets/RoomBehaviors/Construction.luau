@@ -15,15 +15,14 @@ local GameAssets = ReplicatedStorage.GameAssets
 local TowersFolder = workspace.PlayerTowers
 local TowerAssets = GameAssets.TowerAssets
 local Tower = require(TowerAssets.Tower)
+local Column = require(TowerAssets.Column)
+local TowerUtil = require(TowerAssets.TowerUtil)
+local Room = require(TowerAssets.Room)
 
 -- Room Assets
 local RoomAssets = GameAssets.RoomAssets
 local RoomDefinitions = require(RoomAssets.RoomDefinitions)
-local RoomModels = RoomAssets.RoomModels
-local LobbyModels = RoomAssets.LobbyModels
-
--- Utils
-local RoomUtil = require(ReplicatedStorage.GameAssets.RoomAssets.RoomUtil)
+local RoomUtil = require(RoomAssets.RoomUtil)
 
 --------------------------------------------------
 -- TYPES -- 
@@ -36,25 +35,25 @@ type ElevatorData = ProfileTemplate.ElevatorData
 type SerializedRoom = ProfileTemplate.SerializedRoom
 
 type Tower = Tower.Tower
+type Room = Room.Room
+
+type RoomDefinition = RoomDefinitions.RoomDefinition
 
 --------------------------------------------------
 -- MAIN -- 
 --------------------------------------------------
 
+local Construction = {}
+Construction.__index = Construction
 
-ResidentialRoom = {}
-ResidentialRoom.__index = ResidentialRoom
+function Construction.new(room: Room)
+	local self = setmetatable({}, Construction)
 
-function ResidentialRoom.new(tower: Tower, serializedRoom: SerializedRoom, services)
-	local self = setmetatable({}, ResidentialRoom)
-	
-	self.Trove = Trove.new()
-	self.Services = services
-	self.Tower = tower
-	self.SerializedRoomData = serializedRoom
-	
-	self:_Setup()
-	
+	self.Trove = room.Trove:Extend()
+	self.Services = room.Services
+
+	self.Room = room
+
 	return self
 end
 
@@ -63,32 +62,15 @@ end
 -- SETUP -- 
 --------------------------------------------------
 
-function ResidentialRoom:_Setup()
-	local towerFolder: Folder = self.Tower.TowerFolder
-	local towerModel: Model = towerFolder.Tower
-	local roomData: SerializedRoom = self.SerializedRoomData
-	
-	local roomCellModel = RoomAssets.RoomTemplate:Clone()
-	
-	local roomModel = RoomUtil.getRoomModel(roomData.roomDefKey)
-	if not roomModel then
-		warn("[ResidentialRoom] No room model found for key: " .. roomData.roomDefKey)
-		return
-	end
-	
-	-- place room model
-	local roomClone = roomModel:Clone()
-	
-end
 
 --------------------------------------------------
 -- ACTIONS -- 
 --------------------------------------------------
 
-function ResidentialRoom:Destroy()
+function Construction:Destroy()
 	self.Trove:Destroy()
 end
 
-export type ResidentialRoom = typeof(setmetatable({} :: {}, ResidentialRoom))
+export type Construction = typeof(setmetatable({} :: {}, Construction))
 
-return ResidentialRoom
+return Construction

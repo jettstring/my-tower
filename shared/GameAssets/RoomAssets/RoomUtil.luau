@@ -6,10 +6,8 @@ local GameAssets = ReplicatedStorage.GameAssets
 local RoomAssets = GameAssets.RoomAssets
 local RoomDefinitions = require(RoomAssets.RoomDefinitions)
 local RoomModels = RoomAssets.RoomModels
-local RoomTemplate = RoomAssets.RoomTemplate
 
 type RoomDefinition = RoomDefinitions.RoomDefinition
-
 
 
 local RoomUtil = {}

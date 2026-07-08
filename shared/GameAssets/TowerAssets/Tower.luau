@@ -12,12 +12,12 @@ local ProfileTemplate = require(ReplicatedStorage.Modules.ProfileTemplate)
 
 local GameAssets = ReplicatedStorage.GameAssets
 
-
 -- Tower Assets
 local TowersFolder = workspace.PlayerTowers
 local TowerAssets = GameAssets.TowerAssets
-local RoomObjects = TowerAssets.RoomObjects
 local Column = require(TowerAssets.Column)
+local TowerUtil = require(TowerAssets.TowerUtil)
+local Room = require(TowerAssets.Room)
 
 -- Room Assets
 local RoomAssets = GameAssets.RoomAssets
@@ -36,6 +36,7 @@ type ElevatorData = ProfileTemplate.ElevatorData
 type SerializedRoom = ProfileTemplate.SerializedRoom
 
 type Column = Column.Column
+type Room = Room.Room
 
 type RoomDefinition = RoomDefinitions.RoomDefinition
 
@@ -116,8 +117,9 @@ function Tower:_SetupColumns(towerData: TowerData)
 end
 
 function Tower:_SetupRooms(towerData: TowerData)
-	for _, roomEntryData: SerializedRoom in towerData.rooms do
-		self:AddRoom(roomEntryData)
+	-- rooms
+	for _, serializedRoomData: SerializedRoom in towerData.rooms do
+		self:CreateRoom(serializedRoomData)
 	end
 end
 
@@ -138,35 +140,41 @@ end
 -- ACTIONS -- 
 --------------------------------------------------
 
-function Tower:AddRoom(serializedRoom: SerializedRoom)
-	local roomId = serializedRoom.id 
-	local roomDef: RoomDefinition = RoomDefinitions.ByName[serializedRoom.roomDefKey]
-	local roomModule = RoomObjects:FindFirstChild(roomDef.roomType)
-	
-	if not roomModule then
-		warn("[AddRoom] No room module found for type:", roomDef.roomType)
-		return
-	end
-	
+function Tower:CreateRoom(roomData: SerializedRoom)
+	local roomId = roomData.id 
 	if self.Rooms[roomId] then
-		warn("[AddRoom] roomID already exists:", roomId, "for", serializedRoom)
+		warn("[AddRoom] roomID already exists:", roomId, "for", roomData)
 		return
 	end
 	
-	local room = require(roomModule).new(self, serializedRoom, self.Services)
+	local room: Room = Room.new(self, roomData, self.Services)
 	if not room then
-		warn("[AddRoom] Failed to create room:", serializedRoom)
+		warn("[AddRoom] Failed to create room:", roomData)
 		return
 	end	
 	
 	self.Trove:Add(room)
-	
-	-- track room
 	self.Rooms[roomId] = room
-	self.RoomsByCell[serializedRoom.floor] = self.RoomsByCell[serializedRoom.floor] or {}
-	self.RoomsByCell[serializedRoom.floor][serializedRoom.column] = room
+	self.RoomsByCell[roomData.floor] = self.RoomsByCell[roomData.floor] or {}
+	self.RoomsByCell[roomData.floor][roomData.column] = room
 	
 	print("[AddRoom] Added room:", roomId, room)
+end
+
+function Tower:RefreshState()
+	local owner: Player = self.Owner
+	local profile: Profile = self.Services.DataService:GetProfile(owner)
+	if not profile then warn("[_Setup] No profile found for player") return end
+	local towerData: TowerData = profile.TowerData
+
+	-- update room expansions
+	local maxRooms = TowerUtil.MAX_COLUMN_ROOMS
+	for columnIndex, column: Column in self.Columns do
+		local columnData: ColumnData = towerData.columns[columnIndex]
+		if not columnData then warn("[UpdateState] No columnData found for index:", columnIndex) continue end
+		
+		local currentRoomCount = #columnData.rooms
+	end
 end
 
 function Tower:UpdateOwnerDisplay()
@@ -205,7 +213,6 @@ function Tower:UpdateOwnerDisplay()
 	rankLabel.Text = string.format("%s %s", playerRank, NUMERALS[rankTier])
 	rankLabel.UIGradient.Color = rankColor
 	
-	
 	-- tower sign
 	
 end
@@ -216,9 +223,13 @@ function Tower:Destroy()
 	print("[Tower] Tower destroyed:", self.TowerFolder.Name)
 end
 
+
+
+
 --------------------------------------------------
 -- HELPERS -- 
 --------------------------------------------------
+
 
 export type Tower = typeof(setmetatable({} :: {
 	Services: {},

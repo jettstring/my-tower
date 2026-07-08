@@ -16,14 +16,13 @@ local TowersFolder = workspace.PlayerTowers
 local TowerAssets = GameAssets.TowerAssets
 local Tower = require(TowerAssets.Tower)
 local Column = require(TowerAssets.Column)
-local Elevator = require(TowerAssets.Elevator)
-local Lobby = require(TowerAssets.Lobby)
+local TowerUtil = require(TowerAssets.TowerUtil)
+local Room = require(TowerAssets.Room)
 
 -- Room Assets
 local RoomAssets = GameAssets.RoomAssets
 local RoomDefinitions = require(RoomAssets.RoomDefinitions)
-local RoomModels = RoomAssets.RoomModels
-local LobbyModels = RoomAssets.LobbyModels
+local RoomUtil = require(RoomAssets.RoomUtil)
 
 --------------------------------------------------
 -- TYPES -- 
@@ -36,9 +35,7 @@ type ElevatorData = ProfileTemplate.ElevatorData
 type SerializedRoom = ProfileTemplate.SerializedRoom
 
 type Tower = Tower.Tower
-type Column = Column.Column
-type Elevator = Elevator.Elevator
-type Lobby = Lobby.Lobby
+type Room = Room.Room
 
 type RoomDefinition = RoomDefinitions.RoomDefinition
 
@@ -46,20 +43,18 @@ type RoomDefinition = RoomDefinitions.RoomDefinition
 -- MAIN -- 
 --------------------------------------------------
 
-local ResidentialRoom = {}
-ResidentialRoom.__index = ResidentialRoom
+local Commercial = {}
+Commercial.__index = Commercial
 
-function ResidentialRoom.new(tower: Tower, serializedRoomData: SerializedRoom, services)
-	local self = setmetatable({}, ResidentialRoom)
-	
-	self.Trove = Trove.new()
-	self.Services = services
-	
-	self.Tower = tower
-	self.RoomData = serializedRoomData
+function Commercial.new(room: Room)
+	local self = setmetatable({}, Commercial)
 
-	self:_Setup()
-	
+	self.Trove = room.Trove:Extend()
+	self.Services = room.Services
+
+	self.Room = room
+
+
 	return self
 end
 
@@ -68,19 +63,15 @@ end
 -- SETUP -- 
 --------------------------------------------------
 
-function ResidentialRoom:_Setup()
-	
-end
 
 --------------------------------------------------
 -- ACTIONS -- 
 --------------------------------------------------
 
+function Commercial:Destroy()
+	self.Trove:Destroy()
+end
 
---------------------------------------------------
--- HELPERS -- 
---------------------------------------------------
+export type Commercial = typeof(setmetatable({} :: {}, Commercial))
 
-export type ResidentialRoom = typeof(setmetatable({} :: {}, ResidentialRoom))
-
-return ResidentialRoom
+return Commercial
