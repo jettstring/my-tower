@@ -15,15 +15,16 @@ local GameAssets = ReplicatedStorage.GameAssets
 local TowersFolder = workspace.PlayerTowers
 local TowerAssets = GameAssets.TowerAssets
 local RoomBehaviors = TowerAssets.RoomBehaviors
+local TowerUtil = require(TowerAssets.TowerUtil)
+
 
 -- Room Assets
 local RoomAssets = GameAssets.RoomAssets
 local RoomDefinitions = require(RoomAssets.RoomDefinitions)
 local RoomModels = RoomAssets.RoomModels
 local LobbyModels = RoomAssets.LobbyModels
+local RoomUtil = require(RoomAssets.RoomUtil)
 
--- Utils
-local RoomUtil = require(ReplicatedStorage.GameAssets.RoomAssets.RoomUtil)
 
 --------------------------------------------------
 -- TYPES -- 
@@ -94,13 +95,15 @@ function Room:_SetupCell()
 	local cellModel = RoomAssets.RoomCellTemplate:Clone()
 	cellModel.Name = self.RoomId
 	cellModel.Parent = columnFolder.Rooms
+	cellModel:SetAttribute("RoomId", self.RoomId)
+	cellModel:AddTag("RoomCell")
 	self.Trove:Add(cellModel)
 	self.CellModel = cellModel
 	
-	-- position
+	-- position in tower column
 	local roomBoundsPart = cellModel.RoomBoundsPart
 	local roomHeight = roomBoundsPart.Size.Y
-	local position = lobbyModel:GetPivot() * CFrame.new(0, roomHeight * self.RoomData.floor, 0)
+	local position = TowerUtil.getCellPivot(lobbyModel, self.RoomData.floor, roomHeight)
 	cellModel:PivotTo(position)
 	
 	self:_UpdateAttributes()

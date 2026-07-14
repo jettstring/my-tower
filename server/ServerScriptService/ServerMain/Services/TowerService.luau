@@ -9,18 +9,20 @@ local Trove = require(ReplicatedStorage.Packages.Trove)
 -- DEPENDENCIES -- 
 --------------------------------------------------
 
+local ProfileTemplate = require(ReplicatedStorage.Modules.ProfileTemplate)
+
 local TowersFolder = workspace.PlayerTowers
 
 -- Tower Assets
 local GameAssets = ReplicatedStorage:WaitForChild("GameAssets")
 local TowerAssets = GameAssets.TowerAssets
 local Tower = require(TowerAssets.Tower)
-
+local Column = require(TowerAssets.Column)
 
 local remotesFolder = ReplicatedStorage:WaitForChild("Remotes")
 local remotes = {
-	ConstructRoom = remotesFolder.Tower.ConstructRoom,
-	BuildRoom = remotesFolder.Tower.BuildRoom,
+	BuildFloor = remotesFolder.Tower.BuildFloor,
+	AssignRoomType = remotesFolder.Tower.AssignRoomType,
 	DemolishRoom = remotesFolder.Tower.DemolishRoom,
 	
 	
@@ -32,7 +34,14 @@ local remotes = {
 -- TYPES -- 
 --------------------------------------------------
 
+type Profile = ProfileTemplate.ProfileTemplate
+type TowerData = ProfileTemplate.TowerData
+type ColumnData = ProfileTemplate.ColumnData
+type ElevatorData = ProfileTemplate.ElevatorData
+type SerializedRoom = ProfileTemplate.SerializedRoom
+
 type Tower = Tower.Tower
+type Column = Column.Column
 
 --------------------------------------------------
 -- STATE --
@@ -55,6 +64,36 @@ TowerService.PlayerTowers = {} :: {[Player]: Tower}
 --------------------------------------------------
 -- PRIVATE FUNCTIONS --
 --------------------------------------------------
+
+local function attemptBuildFloor(player: Player, columnIndex: number)
+	if type(columnIndex) ~= "number" then return end
+	
+	local tower: Tower = TowerService:GetTower(player)
+	local column: Column = tower and tower.Columns[columnIndex]
+	if not column then warn("[attemptBuildFloor] No column found for player", player) return end
+	
+	local nextFloorCell = column.BuildFloor
+	if not nextFloorCell then warn("No next floor cell found for column", column) return end
+	
+	local nextFloor = column:GetTopFloor() + 1
+	local floorPrice = TowerService:GetFloorPrice(player, columnIndex, nextFloor)
+	
+	if not nextFloor then
+		warn("No next floor found for column", column)
+		return
+	end
+	
+	local profile: Profile = TowerService.Services.DataService:GetProfile(player)
+	if not profile then warn("No profile found for player", player) return end
+	
+	if profile.Money < floorPrice then
+		TowerService.Services.NotificationService:Error(player, "Cannot afford floor!")
+		return
+	end
+	
+	TowerService.Services.DataService:IncrementCurrency(player, "Money", -floorPrice, "Build Floor")
+	tower:AddRoom(columnIndex)
+end
 
 local function cleanupTower(towerFolder: Folder) 
 	
@@ -115,6 +154,13 @@ function TowerService:GetTower(player: Player): Tower?
 	return self.PlayerTowers[player]
 end
 
+function TowerService:GetFloorPrice(player: Player, columnIndex: number, floor: number): number
+	local price = 100 * floor 
+	
+	-- TODO: price modifiers
+	
+	return price
+end
 
 --------------------------------------------------
 -- MAIN --
@@ -127,12 +173,13 @@ function TowerService:Init(services)
 end
 
 function TowerService:Start()
-	
 	self.Services.DataService.Signals.DataLoaded:Connect(function(player: Player)
 		TowerService:AssignTower(player)
 	end)
-	
 	Players.PlayerRemoving:Connect(_playerRemoved)
+	
+	
+	remotes.BuildFloor.OnServerEvent:Connect(attemptBuildFloor)
 	
 end
 

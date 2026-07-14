@@ -3,6 +3,7 @@ local Services = script:WaitForChild("Services")
 
 local loadOrder = {
 	{"DataService", require(Services.DataService) },
+	{"NotificationService", require(Services.NotificationService) },
 	{"TowerService", require(Services.TowerService) },
 }
 

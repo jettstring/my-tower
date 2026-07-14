@@ -4,6 +4,7 @@ local CmdrClient = require(ReplicatedStorage:WaitForChild("CmdrClient"))
 CmdrClient:SetActivationKeys({ Enum.KeyCode.F2 , Enum.KeyCode.Semicolon})
 
 local loadOrder = {
+	{"NotificationController", require(Controllers.NotificationController) },
 	{"TowerController", require(Controllers.TowerController) },
 }
 

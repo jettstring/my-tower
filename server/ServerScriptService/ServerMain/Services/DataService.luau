@@ -6,7 +6,6 @@ local AnalyticsService = game:GetService("AnalyticsService")
 local Signal = require(ReplicatedStorage.Packages.Signal)
 local ProfileStore = require(ReplicatedStorage.Packages.ProfileStore)
 
-
 --------------------------------------------------
 -- DEPENDENCIES -- 
 --------------------------------------------------
@@ -17,12 +16,19 @@ local remotes = {
 	GetPurchaseProfile = remotesFolder.Data.GetPurchaseProfile,
 }
 
-local INCREMENTABLE_VALUES = {
+local INCREMENTABLE_CURRENCIES = {
 	["Money"] = true,
 }
 
-local PROFILE_TEMPLATE = require(ReplicatedStorage.Modules:WaitForChild("ProfileTemplate"))
-local PURCHASE_PROFILE_TEMPLATE = require(ReplicatedStorage.Modules:WaitForChild("PurchaseProfileTemplate"))
+local ProfileTemplate = require(ReplicatedStorage.Modules:WaitForChild("ProfileTemplate"))
+local PurchaseProfileTemplate = require(ReplicatedStorage.Modules:WaitForChild("PurchaseProfileTemplate"))
+
+
+--------------------------------------------------
+-- TYPES -- 
+--------------------------------------------------
+
+type Profile = ProfileTemplate.ProfileTemplate
 
 --------------------------------------------------
 -- STATE --
@@ -40,8 +46,8 @@ DataService.DATA_CONFIG = {
 	Mock = true, 
 }
 
-DataService.PlayerStore = ProfileStore.New(DataService.MainKey, PROFILE_TEMPLATE)
-DataService.PurchaseStore = ProfileStore.New(DataService.PurchaseKey, PURCHASE_PROFILE_TEMPLATE)
+DataService.PlayerStore = ProfileStore.New(DataService.MainKey, ProfileTemplate)
+DataService.PurchaseStore = ProfileStore.New(DataService.PurchaseKey, PurchaseProfileTemplate)
 
 if RunService:IsStudio() and DataService.DATA_CONFIG.Mock == true then
 	DataService.PlayerStore = DataService.PlayerStore.Mock
@@ -160,11 +166,61 @@ function DataService:UpdateAttributes(player: Player)
 	local profile = self:GetProfile(player)
 	if not profile then warn("[UpdateAttributes] No profile found for player:", player.Name) return end
 	
-	for valueName in INCREMENTABLE_VALUES do
+	for valueName in INCREMENTABLE_CURRENCIES do
 		player:SetAttribute(valueName, profile[valueName])
 	end
 end
 
+function DataService:IncrementCurrency(player: Player, currencyName: string, amount: number, source: string?, suppressAnalytics: boolean?): string
+	if not INCREMENTABLE_CURRENCIES[currencyName] then
+		return 'Invalid currency'
+	end
+	
+	local profile: Profile = self:GetProfile(player)
+	if not profile then return 'Profile not found' end
+	
+	if typeof(amount) ~= "number" then
+		return "Amount must be a number."
+	end
+
+	local currentValue = profile[currencyName]
+	if typeof(currentValue) ~= "number" then
+		currentValue = 0
+	end
+
+	local newValue = currentValue + amount
+	profile[currencyName] = newValue
+
+	-- Update attributes
+	self:UpdateAttributes(player)
+
+	local transactionAmount = math.abs(amount)
+	if not suppressAnalytics then
+		if amount > 0 then
+			AnalyticsService:LogEconomyEvent(player, Enum.AnalyticsEconomyFlowType.Source, currencyName,
+				transactionAmount,
+				newValue,
+				Enum.AnalyticsEconomyTransactionType.Gameplay.Name,
+				nil,
+				{
+					[Enum.AnalyticsCustomFieldKeys.CustomField01.Name] = source,
+				} 
+			)
+		elseif amount < 0 then
+			AnalyticsService:LogEconomyEvent(player, Enum.AnalyticsEconomyFlowType.Sink, currencyName,
+				transactionAmount,
+				newValue,
+				Enum.AnalyticsEconomyTransactionType.Gameplay.Name,
+				nil,
+				{
+					[Enum.AnalyticsCustomFieldKeys.CustomField01.Name] = source,
+				} 
+			)
+		end
+	end
+	
+	return `{player.Name} now has {newValue} {currentValue}.`
+end
 
 --------------------------------------------------
 -- MAIN --

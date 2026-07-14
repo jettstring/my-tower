@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
 
 local Trove = require(ReplicatedStorage.Packages.Trove)
 
@@ -8,7 +9,6 @@ local Trove = require(ReplicatedStorage.Packages.Trove)
 --------------------------------------------------
 
 local ProfileTemplate = require(ReplicatedStorage.Modules.ProfileTemplate)
-
 
 local GameAssets = ReplicatedStorage.GameAssets
 
@@ -50,10 +50,11 @@ Tower.__index = Tower
 function Tower.new(ownerPlayer: Player, TowerFolder: Folder, services: any)
 	local self = setmetatable({}, Tower)
 	self.Services = services
+	self.Trove = Trove.new()
 
 	self.Owner = ownerPlayer
 	self.TowerFolder = TowerFolder
-	self.Trove = Trove.new()
+	self.TowerData = nil
 
 	self.State = {
 		Active = false,
@@ -98,6 +99,7 @@ function Tower:_Setup()
 	local profile: Profile = self.Services.DataService:GetProfile(owner)
 	if not profile then warn("[_Setup] No profile found for player") return end
 	local towerData: TowerData = profile.TowerData
+	self.TowerData = towerData
 	self:_SetupColumns(towerData)
 	self:_SetupRooms(towerData)
 	
@@ -159,6 +161,23 @@ function Tower:CreateRoom(roomData: SerializedRoom)
 	self.RoomsByCell[roomData.floor][roomData.column] = room
 	
 	print("[AddRoom] Added room:", roomId, room)
+end
+
+function Tower:AddRoom(columnIndex: number): Room?
+	local column: Column = self.Columns[columnIndex]
+	if not column then warn("[AddRoom] No column found at index:", columnIndex) return end
+	
+	local roomData: SerializedRoom = {
+		id = HttpService:GenerateGUID(false),
+		floor = column:GetTopFloor() + 1,
+		column = columnIndex,
+		state = "Empty"
+	}
+	table.insert(self.TowerData.rooms, roomData)
+	self:CreateRoom(roomData)
+	column:RefreshBuildFloor()
+	
+	return self.Rooms[roomData.id]
 end
 
 function Tower:RefreshState()
@@ -235,7 +254,12 @@ export type Tower = typeof(setmetatable({} :: {
 	Services: {},
 	Owner: Player,
 	TowerFolder: Folder,
+	TowerData: TowerData,
 	State: {},
+	Columns: {[number]: Column},
+	Rooms: {[string]: Room},
+	RoomsByCell: {[number]: {Room}},
+	
 }, Tower))
 
 return Tower
