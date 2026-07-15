@@ -18,6 +18,11 @@ local GameAssets = ReplicatedStorage:WaitForChild("GameAssets")
 local TowerAssets = GameAssets.TowerAssets
 local Tower = require(TowerAssets.Tower)
 local Column = require(TowerAssets.Column)
+local Room = require(TowerAssets.Room)
+
+-- Room Assets
+local RoomAssets = GameAssets.RoomAssets
+local RoomDefinitions = require(RoomAssets.RoomDefinitions)
 
 local remotesFolder = ReplicatedStorage:WaitForChild("Remotes")
 local remotes = {
@@ -40,8 +45,11 @@ type ColumnData = ProfileTemplate.ColumnData
 type ElevatorData = ProfileTemplate.ElevatorData
 type SerializedRoom = ProfileTemplate.SerializedRoom
 
+type RoomDefinition = RoomDefinitions.RoomDefinition
+
 type Tower = Tower.Tower
 type Column = Column.Column
+type Room = Room.Room
 
 --------------------------------------------------
 -- STATE --
@@ -93,6 +101,23 @@ local function attemptBuildFloor(player: Player, columnIndex: number)
 	
 	TowerService.Services.DataService:IncrementCurrency(player, "Money", -floorPrice, "Build Floor")
 	tower:AddRoom(columnIndex)
+end
+
+local function attemptAssignRoomType(player: Player, roomId: string, roomType: string)
+	if type(roomId) ~= "string" or type(roomType) ~= "string" then return end
+
+	local tower: Tower = TowerService:GetTower(player)
+	local room: Room = tower and tower.Rooms[roomId]
+	if not room then warn("[attemptAssignRoomType] No room found for roomId", roomId) return end
+	if room.BehaviorName ~= "Construction" then return end
+
+	local randomKey = TowerService:RollRoomKeyFromType(player, roomType)
+	if not randomKey then
+		warn("[attemptAssignRoomType] No randomRoomKey found for roomType", roomType)
+		return
+	end
+	
+	room.Behavior:StartConstruction(randomKey)
 end
 
 local function cleanupTower(towerFolder: Folder) 
@@ -162,6 +187,15 @@ function TowerService:GetFloorPrice(player: Player, columnIndex: number, floor: 
 	return price
 end
 
+function TowerService:RollRoomKeyFromType(player: Player, roomType: string): string?
+	local typeBucket = RoomDefinitions.RollBuckets[roomType]
+	if not typeBucket or #typeBucket == 0 then return nil end
+	
+	local randomRoomKey: string = typeBucket[math.random(#typeBucket)]
+
+	return randomRoomKey
+end
+
 --------------------------------------------------
 -- MAIN --
 --------------------------------------------------
@@ -180,6 +214,7 @@ function TowerService:Start()
 	
 	
 	remotes.BuildFloor.OnServerEvent:Connect(attemptBuildFloor)
+	remotes.AssignRoomType.OnServerEvent:Connect(attemptAssignRoomType)
 	
 end
 

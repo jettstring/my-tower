@@ -101,8 +101,8 @@ function Room:_SetupCell()
 	self.CellModel = cellModel
 	
 	-- position in tower column
-	local roomBoundsPart = cellModel.RoomBoundsPart
-	local roomHeight = roomBoundsPart.Size.Y
+	local cellBoundsPart = cellModel.CellBoundsPart
+	local roomHeight = cellBoundsPart.Size.Y
 	local position = TowerUtil.getCellPivot(lobbyModel, self.RoomData.floor, roomHeight)
 	cellModel:PivotTo(position)
 	
@@ -136,7 +136,7 @@ end
 -- STATE --
 --------------------------------------------------
 
-function Room:SetState(newState: string)
+function Room:SetState(newState: ("Constructing" | "Empty" | "Occupied"))
 	local oldState = self.RoomData.state
 	if oldState == newState then
 		warn("Room is already in state: " .. newState)
@@ -152,7 +152,6 @@ function Room:SetState(newState: string)
 		self:SetBehavior(behaviorName)
 	end
 end
-
 
 function Room:SetBehavior(behaviorName: string)
 	if self.Behavior then
@@ -172,12 +171,28 @@ end
 
 
 function Room:_UpdateAttributes()
-	self.CellModel:SetAttribute("State", self.RoomData.state)
+	local cellModel = self.CellModel
+	local roomData: SerializedRoom = self.RoomData
+	cellModel:SetAttribute("RoomDefKey", roomData.roomDefKey)
+	cellModel:SetAttribute("CustomName", roomData.customName)
+	cellModel:SetAttribute("ConstructionEndsAt", roomData.constructionEndTime)
+	cellModel:SetAttribute("State", roomData.state)
 end
 
 --------------------------------------------------
 -- ACTIONS -- 
 --------------------------------------------------
+
+function Room:SetRoomKey(roomDefKey: string)
+	local oldKey = self.RoomData.roomDefKey
+	if oldKey == roomDefKey then return end
+	
+	local validRoomDef: RoomDefinition? = RoomDefinitions.ByName[roomDefKey]
+	if not validRoomDef then warn("Invalid room key: " .. roomDefKey) return end
+	
+	self.RoomData.roomDefKey = roomDefKey
+	self:SetState("Occupied")
+end
 
 function Room:Demolish()
 	self.RoomData.roomDefKey = nil
@@ -193,6 +208,8 @@ export type Room = typeof(setmetatable({} :: {
 	Tower: any,
 	RoomData: SerializedRoom,
 	RoomId: string,
+	BehaviorName: string,
+	Behavior: any,
 }, Room))
 
 return Room

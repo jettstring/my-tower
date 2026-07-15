@@ -110,8 +110,8 @@ function Column:RefreshBuildFloor()
 	end
 	
 	-- position in tower column
-	local roomBoundsPart = buildFloor.RoomBoundsPart
-	local roomHeight = roomBoundsPart.Size.Y
+	local cellBoundsPart = buildFloor.CellBoundsPart
+	local roomHeight = cellBoundsPart.Size.Y
 	local position = TowerUtil.getCellPivot(lobbyModel, nextFloor, roomHeight)
 	buildFloor:PivotTo(position)
 	

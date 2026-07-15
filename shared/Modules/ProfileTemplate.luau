@@ -3,25 +3,26 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ProfileTemplate = {
 	
 	Money = 10000,
+	Gems = 0,
 	
 	TowerData = {
 		rooms = {
-			{
-				id = "firstRoomEva",
-				roomDefKey = "Rustic Apartments",
-				state = "Occupied",
-				column = 1,
-				floor = 1,
-				customName = nil,
-				customRoomColors = nil,
-			},
-			{
-				id = "secondRoom",
-				roomDefKey = nil,
-				state = "Empty",
-				column = 1,
-				floor = 2,
-			}	
+			--{
+			--	id = "firstRoomEva",
+			--	roomDefKey = "Rustic Apartments",
+			--	state = "Occupied",
+			--	column = 1,
+			--	floor = 1,
+			--	customName = nil,
+			--	customRoomColors = nil,
+			--},
+			--{
+			--	id = "secondRoom",
+			--	roomDefKey = nil,
+			--	state = "Empty",
+			--	column = 1,
+			--	floor = 2,
+			--}	
 		},
 		columns = {
 			[1] = {
@@ -50,7 +51,7 @@ export type SerializedRoom = {
 	state: "Constructing" | "Empty" | "Occupied",
 	
 	-- construction
-	constructionTime: number?,
+	constructionEndTime: number?,
 	
 	customName: string?,
 	customRoomColors: {[string]: Color3}?,

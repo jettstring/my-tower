@@ -57,20 +57,53 @@ function Construction.new(room: Room)
 	return self
 end
 
-
---------------------------------------------------
--- SETUP -- 
---------------------------------------------------
-
-
 --------------------------------------------------
 -- ACTIONS -- 
 --------------------------------------------------
+
+function Construction:StartConstruction(roomDefKey: string)
+	local room: Room = self.Room
+	if room.RoomData.state ~= "Empty" then warn("Room is not empty") return end
+	
+	local roomDef: RoomDefinition? = RoomDefinitions.ByName[roomDefKey]
+	if not roomDef then warn("No room def for key: " .. roomDefKey) return end
+		
+	room.RoomData.roomDefKey = roomDefKey
+	room.RoomData.constructionEndTime = os.time() + 10 -- TODO: derive build time
+	room:SetState("Constructing")
+	
+	self:_RunTimer(room.RoomData.constructionEndTime)
+end
+
+--------------------------------------------------
+-- PRIVATE -- 
+--------------------------------------------------
+
+function Construction:_RunTimer(endTimestamp: number)
+	local remaining = endTimestamp - os.time()
+	if remaining <= 0 then
+		self:_Complete()
+		return
+	end
+	
+	self.Trove:Add(task.delay(remaining, function()
+		self:_Complete()
+	end))
+end
+
+function Construction:_Complete()
+	local room: Room = self.Room
+	room.RoomData.constructionEndTime = nil
+	room:SetState("Occupied")
+end
+
 
 function Construction:Destroy()
 	self.Trove:Destroy()
 end
 
-export type Construction = typeof(setmetatable({} :: {}, Construction))
+export type Construction = typeof(setmetatable({} :: {
+    Room: Room,
+}, Construction))
 
 return Construction

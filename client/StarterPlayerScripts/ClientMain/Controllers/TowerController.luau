@@ -58,6 +58,7 @@ TowerController.Signals = {
 
 
 local buildPromptConnections = {} :: {RBXScriptConnection}
+local assignTypePromptConnections = {} :: {RBXScriptConnection}
 
 --------------------------------------------------
 -- VARIABLES --
@@ -68,6 +69,45 @@ local buildPromptConnections = {} :: {RBXScriptConnection}
 --------------------------------------------------
 -- PRIVATE FUNCTIONS --
 --------------------------------------------------
+
+local function promptAssignType(roomCell: Model)
+	-- cleanup
+	for _, connection in assignTypePromptConnections do
+		connection:Disconnect()
+	end
+	table.clear(assignTypePromptConnections)
+
+	-- check if this is a empty room cell
+	if not roomCell:HasTag("RoomCell") or roomCell:GetAttribute("State") ~= "Empty" then warn("[promptAssignType] This is not a empty rom") return end
+
+	local roomId = roomCell:GetAttribute("RoomId")
+	if not roomId then warn("[promptAssignType] No room ID found for room cell: ", roomCell) return end
+	
+	local assignRoomTypeFrame = Popups.AssignRoomType
+	local closeButton = assignRoomTypeFrame.Close
+	local typeButtons = assignRoomTypeFrame.RoomTypeButtons
+	local residentialButton = typeButtons.Residential
+	local commercialButtonsContainer = typeButtons.Commercial.ButtonContainer
+	
+	local buttonContainers = { residentialButton }
+	for _, typeContainer in commercialButtonsContainer:GetChildren() do
+		if typeContainer:IsA("Frame") then table.insert(buttonContainers, typeContainer) end
+	end
+	
+	for _, buttonContainer in buttonContainers do
+		local button = buttonContainer.Button
+		table.insert(assignTypePromptConnections, button.Activated:Connect(function()
+			remotes.AssignRoomType:FireServer(roomId, buttonContainer.Name)
+			assignRoomTypeFrame.Visible = false
+		end))
+	end
+	
+	table.insert(assignTypePromptConnections, closeButton.Activated:Connect(function()
+		assignRoomTypeFrame.Visible = false
+	end))
+	
+	assignRoomTypeFrame.Visible = true	
+end
 
 local function promptBuildFloor(roomCell: Model)
 	-- cleanup
@@ -145,8 +185,7 @@ local function mountAssignTypeButton(roomCell: Model)
 	local button = assignRoomTypeBillboard:WaitForChild("Button")
 
 	trove:Connect(button.Activated, function()
-		-- TODO: show room type selection UI
-		print("Assign Room Type")
+		promptAssignType(roomCell)
 	end)
 	
 	return function() trove:Destroy() end 
