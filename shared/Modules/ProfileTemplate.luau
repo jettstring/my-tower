@@ -1,7 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local ProfileTemplate = {
-	
 	Money = 10000,
 	Gems = 0,
 	
@@ -17,31 +16,37 @@ local ProfileTemplate = {
 			--	customRoomColors = nil,
 			--},
 			--{
-			--	id = "secondRoom",
-			--	roomDefKey = nil,
-			--	state = "Empty",
-			--	column = 1,
-			--	floor = 2,
-			--}	
+			--	id = "secondRoomEva",
+			--	roomDefKey = "Rustic Apartments",
+			--	state = "Occupied",
+			--	column = -1,
+			--	floor = 1,
+			--	customName = nil,
+			--	customRoomColors = nil,
+			--},
 		},
-		columns = {
-			[1] = {
-				elevatorData = {
-					speedLevel = 1,
-					elevatorSkin = nil,
-				},
-				lobbyData = {
-					lobbyOccupants = {},
-					lobbySkin = nil,
-				},
-			}
-		}
+		
+		elevatorData = {
+			speedLevel = 1,
+			elevatorSkin = nil,
+		},
+		
+		lobbyData = {
+			lobbyOccupants = {},
+			lobbySkin = nil,
+		},
+		
 	} :: TowerData,
 	
 }
 
 export type ProfileTemplate = typeof(ProfileTemplate) 
 
+export type TowerData = {
+	rooms: { SerializedRoom },
+	elevatorData: ElevatorData,
+	lobbyData: LobbyData,
+}
 
 export type SerializedRoom = {
 	id: string,
@@ -67,14 +72,6 @@ export type LobbyData = {
 	lobbySkin: string?,
 }
 
-export type ColumnData = {
-	elevatorData: ElevatorData,
-	lobbyData: LobbyData,
-}
 
-export type TowerData = {
-	rooms: { SerializedRoom },
-	columns: {[number]: ColumnData}
-}
 
 return ProfileTemplate

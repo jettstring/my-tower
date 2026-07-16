@@ -3,53 +3,6 @@
   "className": "DataModel",
   "children": [
     {
-      "name": "StarterPlayer",
-      "className": "StarterPlayer",
-      "pluginManaged": true,
-      "children": [
-        {
-          "name": "StarterPlayerScripts",
-          "className": "StarterPlayerScripts",
-          "pluginManaged": true,
-          "children": [
-            {
-              "name": "ClientMain",
-              "className": "LocalScript",
-              "pluginManaged": true,
-              "filePaths": [
-                "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/ClientMain/init.local.luau"
-              ],
-              "children": [
-                {
-                  "name": "Controllers",
-                  "className": "Folder",
-                  "pluginManaged": true,
-                  "children": [
-                    {
-                      "name": "NotificationController",
-                      "className": "ModuleScript",
-                      "pluginManaged": true,
-                      "filePaths": [
-                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/ClientMain/Controllers/NotificationController.luau"
-                      ]
-                    },
-                    {
-                      "name": "TowerController",
-                      "className": "ModuleScript",
-                      "pluginManaged": true,
-                      "filePaths": [
-                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/ClientMain/Controllers/TowerController.luau"
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "ReplicatedStorage",
       "className": "ReplicatedStorage",
       "pluginManaged": true,
@@ -1870,29 +1823,6 @@
           ]
         },
         {
-          "name": "Modules",
-          "className": "Folder",
-          "pluginManaged": true,
-          "children": [
-            {
-              "name": "ProfileTemplate",
-              "className": "ModuleScript",
-              "pluginManaged": true,
-              "filePaths": [
-                "c:/Users/jstri/Documents/Development/Projects/MyTower/code/shared/Modules/ProfileTemplate.luau"
-              ]
-            },
-            {
-              "name": "PurchaseProfileTemplate",
-              "className": "ModuleScript",
-              "pluginManaged": true,
-              "filePaths": [
-                "c:/Users/jstri/Documents/Development/Projects/MyTower/code/shared/Modules/PurchaseProfileTemplate.luau"
-              ]
-            }
-          ]
-        },
-        {
           "name": "GameAssets",
           "className": "Folder",
           "pluginManaged": true,
@@ -1916,14 +1846,6 @@
                   "pluginManaged": true,
                   "filePaths": [
                     "c:/Users/jstri/Documents/Development/Projects/MyTower/code/shared/GameAssets/TowerAssets/Lobby.luau"
-                  ]
-                },
-                {
-                  "name": "Column",
-                  "className": "ModuleScript",
-                  "pluginManaged": true,
-                  "filePaths": [
-                    "c:/Users/jstri/Documents/Development/Projects/MyTower/code/shared/GameAssets/TowerAssets/Column.luau"
                   ]
                 },
                 {
@@ -2045,6 +1967,29 @@
               ]
             }
           ]
+        },
+        {
+          "name": "Modules",
+          "className": "Folder",
+          "pluginManaged": true,
+          "children": [
+            {
+              "name": "PurchaseProfileTemplate",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "c:/Users/jstri/Documents/Development/Projects/MyTower/code/shared/Modules/PurchaseProfileTemplate.luau"
+              ]
+            },
+            {
+              "name": "ProfileTemplate",
+              "className": "ModuleScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "c:/Users/jstri/Documents/Development/Projects/MyTower/code/shared/Modules/ProfileTemplate.luau"
+              ]
+            }
+          ]
         }
       ]
     },
@@ -2088,6 +2033,53 @@
                   "pluginManaged": true,
                   "filePaths": [
                     "c:/Users/jstri/Documents/Development/Projects/MyTower/code/server/ServerScriptService/ServerMain/Services/TowerService.luau"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "StarterPlayer",
+      "className": "StarterPlayer",
+      "pluginManaged": true,
+      "children": [
+        {
+          "name": "StarterPlayerScripts",
+          "className": "StarterPlayerScripts",
+          "pluginManaged": true,
+          "children": [
+            {
+              "name": "ClientMain",
+              "className": "LocalScript",
+              "pluginManaged": true,
+              "filePaths": [
+                "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/ClientMain/init.local.luau"
+              ],
+              "children": [
+                {
+                  "name": "Controllers",
+                  "className": "Folder",
+                  "pluginManaged": true,
+                  "children": [
+                    {
+                      "name": "TowerController",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/ClientMain/Controllers/TowerController.luau"
+                      ]
+                    },
+                    {
+                      "name": "NotificationController",
+                      "className": "ModuleScript",
+                      "pluginManaged": true,
+                      "filePaths": [
+                        "c:/Users/jstri/Documents/Development/Projects/MyTower/code/client/StarterPlayerScripts/ClientMain/Controllers/NotificationController.luau"
+                      ]
+                    }
                   ]
                 }
               ]

@@ -17,7 +17,6 @@ local TowersFolder = workspace.PlayerTowers
 local GameAssets = ReplicatedStorage:WaitForChild("GameAssets")
 local TowerAssets = GameAssets.TowerAssets
 local Tower = require(TowerAssets.Tower)
-local Column = require(TowerAssets.Column)
 local Room = require(TowerAssets.Room)
 
 -- Room Assets
@@ -41,14 +40,12 @@ local remotes = {
 
 type Profile = ProfileTemplate.ProfileTemplate
 type TowerData = ProfileTemplate.TowerData
-type ColumnData = ProfileTemplate.ColumnData
 type ElevatorData = ProfileTemplate.ElevatorData
 type SerializedRoom = ProfileTemplate.SerializedRoom
 
 type RoomDefinition = RoomDefinitions.RoomDefinition
 
 type Tower = Tower.Tower
-type Column = Column.Column
 type Room = Room.Room
 
 --------------------------------------------------
@@ -77,23 +74,20 @@ local function attemptBuildFloor(player: Player, columnIndex: number)
 	if type(columnIndex) ~= "number" then return end
 	
 	local tower: Tower = TowerService:GetTower(player)
-	local column: Column = tower and tower.Columns[columnIndex]
-	if not column then warn("[attemptBuildFloor] No column found for player", player) return end
+	if not tower then warn("No tower found for player", player) return end
 	
-	local nextFloorCell = column.BuildFloor
-	if not nextFloorCell then warn("No next floor cell found for column", column) return end
+	local validColumn = table.find(tower:GetBuildableColumns(), columnIndex)
+	if not validColumn then warn("[attemptBuildFloor] Invalid column index", columnIndex) return end
 	
-	local nextFloor = column:GetTopFloor() + 1
+	local nextFloor = tower:GetColumnTopFloor(columnIndex) + 1
 	local floorPrice = TowerService:GetFloorPrice(player, columnIndex, nextFloor)
-	
 	if not nextFloor then
-		warn("No next floor found for column", column)
+		warn("No next floor found for column index", columnIndex)
 		return
 	end
 	
 	local profile: Profile = TowerService.Services.DataService:GetProfile(player)
 	if not profile then warn("No profile found for player", player) return end
-	
 	if profile.Money < floorPrice then
 		TowerService.Services.NotificationService:Error(player, "Cannot afford floor!")
 		return

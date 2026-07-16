@@ -28,7 +28,6 @@ local LobbyModels = RoomAssets.LobbyModels
 
 type Profile = ProfileTemplate.ProfileTemplate
 type TowerData = ProfileTemplate.TowerData
-type ColumnData = ProfileTemplate.ColumnData
 type ElevatorData = ProfileTemplate.ElevatorData
 type SerializedRoom = ProfileTemplate.SerializedRoom
 
@@ -40,7 +39,7 @@ type SerializedRoom = ProfileTemplate.SerializedRoom
 local Elevator = {}
 Elevator.__index = Elevator
 
-function Elevator.new(column, columnData: ColumnData, services)
+function Elevator.new(column, towerData: ColumnData, services)
 	local self = setmetatable({}, Elevator)
 	
 	self.Trove = Trove.new()

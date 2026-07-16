@@ -32,7 +32,6 @@ local RoomUtil = require(RoomAssets.RoomUtil)
 
 type Profile = ProfileTemplate.ProfileTemplate
 type TowerData = ProfileTemplate.TowerData
-type ColumnData = ProfileTemplate.ColumnData
 type ElevatorData = ProfileTemplate.ElevatorData
 type SerializedRoom = ProfileTemplate.SerializedRoom
 
@@ -89,22 +88,21 @@ end
 function Room:_SetupCell()
 	local towerFolder: Folder = self.Tower.TowerFolder
 	local towerModel: Model = towerFolder.Tower
-	local columnFolder = towerModel.Columns:FindFirstChild(self.RoomData.column)
-	local lobbyModel: Model = columnFolder.Lobby
+	local columnIndex = self.RoomData.column
+	
+	local columnBoundsPart = towerModel.ColumnBoundParts:FindFirstChild(tostring(columnIndex))
+	if not columnBoundsPart then warn("[_Setup] No columnBoundsPart found for column:", columnIndex) return end
 	
 	local cellModel = RoomAssets.RoomCellTemplate:Clone()
 	cellModel.Name = self.RoomId
-	cellModel.Parent = columnFolder.Rooms
+	cellModel.Parent = towerModel.Rooms
 	cellModel:SetAttribute("RoomId", self.RoomId)
 	cellModel:AddTag("RoomCell")
 	self.Trove:Add(cellModel)
 	self.CellModel = cellModel
 	
-	-- position in tower column
-	local cellBoundsPart = cellModel.CellBoundsPart
-	local roomHeight = cellBoundsPart.Size.Y
-	local position = TowerUtil.getCellPivot(lobbyModel, self.RoomData.floor, roomHeight)
-	cellModel:PivotTo(position)
+	-- position
+	cellModel:PivotTo(TowerUtil.getCellPivot(columnBoundsPart, self.RoomData.floor))
 	
 	self:_UpdateAttributes()
 end
@@ -174,6 +172,8 @@ function Room:_UpdateAttributes()
 	local cellModel = self.CellModel
 	local roomData: SerializedRoom = self.RoomData
 	cellModel:SetAttribute("RoomDefKey", roomData.roomDefKey)
+	cellModel:SetAttribute("Floor", roomData.floor)
+	cellModel:SetAttribute("Column", roomData.column)
 	cellModel:SetAttribute("CustomName", roomData.customName)
 	cellModel:SetAttribute("ConstructionEndsAt", roomData.constructionEndTime)
 	cellModel:SetAttribute("State", roomData.state)

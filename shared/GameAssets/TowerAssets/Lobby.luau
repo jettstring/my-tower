@@ -29,7 +29,6 @@ local LobbyModels = RoomAssets.LobbyModels
 
 type Profile = ProfileTemplate.ProfileTemplate
 type TowerData = ProfileTemplate.TowerData
-type ColumnData = ProfileTemplate.ColumnData
 type ElevatorData = ProfileTemplate.ElevatorData
 type SerializedRoom = ProfileTemplate.SerializedRoom
 

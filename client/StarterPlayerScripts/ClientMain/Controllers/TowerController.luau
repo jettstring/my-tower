@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
 local Signal = require(ReplicatedStorage.Packages.Signal)
 local Observers = require(ReplicatedStorage.Packages.Observers)
@@ -26,7 +27,7 @@ local RoomAssets = GameAssets.RoomAssets
 local RoomUtil = require(RoomAssets.RoomUtil)
 local RoomDefinitions = require(RoomAssets.RoomDefinitions)
 local RoomModels = RoomAssets.RoomModels
-local RoomDisplays = RoomAssets.RoomDisplays
+local RoofDisplays = RoomAssets.RoofDisplays
 local RoomBillboards = RoomAssets.RoomBillboards
 
 
@@ -35,7 +36,6 @@ local remotes = {
 	BuildFloor = remotesFolder.Tower.BuildFloor,
 	AssignRoomType = remotesFolder.Tower.AssignRoomType,
 	DemolishRoom = remotesFolder.Tower.DemolishRoom,
-
 
 	-- RFs
 	GetTower = remotesFolder.Tower.GetTower,
@@ -55,7 +55,6 @@ TowerController.Controllers = {}
 TowerController.Signals = {
 	TowerAssigned = Signal.new(),
 }
-
 
 local buildPromptConnections = {} :: {RBXScriptConnection}
 local assignTypePromptConnections = {} :: {RBXScriptConnection}
@@ -122,7 +121,7 @@ local function promptBuildFloor(roomCell: Model)
 	local price = roomCell:GetAttribute("Price")
 	if not price then warn("[promptBuildFloor] No floor price found for room cell: " .. roomCell) return end
 
-	local columnIndex = tonumber(roomCell.Parent.Parent.Name)
+	local columnIndex = roomCell:GetAttribute("Column")
 	if not columnIndex then warn("[promptBuildFloor] No column index found for room cell: " .. roomCell) return end
 
 	local buildFloorFrame = Popups.BuildFloor
@@ -166,16 +165,9 @@ local function mountBuildFloor(roomCell: Model, isOwner: boolean)
 	return function() trove:Destroy() end 
 end
 
-local function mountRoofDisplay(roomCell: Model, isOwner: boolean)
-	local trove = Trove.new()
-
-
-	return function() trove:Destroy() end 
-end
-
 local function mountAssignTypeButton(roomCell: Model)
 	local trove = Trove.new()
-	
+
 	local assignRoomTypeBillboard = RoomBillboards.AssignRoomType:Clone()
 	local roomBoundsPart: Part = roomCell:WaitForChild("RoomBoundsPart")
 	assignRoomTypeBillboard.Adornee = roomBoundsPart
@@ -187,8 +179,70 @@ local function mountAssignTypeButton(roomCell: Model)
 	trove:Connect(button.Activated, function()
 		promptAssignType(roomCell)
 	end)
-	
+
 	return function() trove:Destroy() end 
+end
+
+local function mountConstructionTimer(roomCell: Model, isOwner: boolean): () -> ()
+	-- mounted per VALUE of ConstructionEndsAt: billboard, button, and loop all live exactly that long
+	return Observers.observeAttribute(roomCell, "ConstructionEndsAt", function(endsAt: number)
+		local trove = Trove.new()
+
+		local billboard = trove:Add(RoomBillboards.ConstructionProgressDisplay:Clone())
+		billboard.Adornee = roomCell:WaitForChild("RoomBoundsPart")
+		billboard.Parent = playerGui
+
+		local timerLabel = billboard.TimerLabel
+		local skipButton = billboard.SkipButton
+
+		if isOwner then
+			trove:Connect(skipButton.Activated, function()
+				remotes.SkipConstruction:FireServer(roomCell:GetAttribute("RoomId"))
+			end)
+		else
+			skipButton:Destroy()
+		end
+
+		local lastShown = -1
+		trove:Connect(RunService.Heartbeat, function()
+			local remaining = math.max(0, math.floor(endsAt - workspace:GetServerTimeNow()))
+			if remaining ~= lastShown then
+				lastShown = remaining
+				timerLabel.Text = string.format("%02dM %02dS", math.floor(remaining / 60), remaining % 60)
+			end
+		end)
+
+		return function() trove:Destroy() end
+	end)
+end
+
+local function mountRoofDisplay(roomCell: Model, isOwner: boolean)
+	return Observers.observeAttribute(roomCell, "State", function(state: string)
+		
+		local roofPart = roomCell:FindFirstChild("Roof")
+		if not roofPart then return end
+		
+		local template: SurfaceGui?
+		if state == "Constructing" then
+			template = RoofDisplays.Construction
+		elseif state == "Occupied" then
+			local defKey = roomCell:GetAttribute("RoomDefKey")
+			local roomDef: RoomDefinition = defKey and RoomDefinitions.ByName[defKey]
+			if not roomDef then warn("No room def for key: ", defKey) return end
+			template = RoofDisplays[roomDef.roomType]
+		end
+		if not template then return end
+		
+		local trove = Trove.new()
+		local display: SurfaceGui = template:Clone()
+		trove:Add(display)
+		display.Parent = roofPart
+		display.Adornee = roofPart
+		display.Enabled = true
+
+
+		return function() trove:Destroy() end 
+	end)
 end
 
 local function mountRoom(roomCell: Model, isOwner: boolean)
@@ -196,14 +250,18 @@ local function mountRoom(roomCell: Model, isOwner: boolean)
 	
 	-- show room roof info display
 	trove:Add(mountRoofDisplay(roomCell, isOwner))
+	trove:Add(mountConstructionTimer(roomCell, isOwner))
 
-	if isOwner then
-		trove:Add(Observers.observeAttribute(roomCell, "State", function(state)
-			if state == "Empty" then
+	
+	trove:Add(Observers.observeAttribute(roomCell, "State", function(state)
+		if state == "Empty" then
+			if isOwner then
 				return mountAssignTypeButton(roomCell)
 			end
-		end))
-	end
+		elseif state == "Constructing" then
+		elseif state == "Occupied" then
+		end
+	end))
 
 	return function() trove:Destroy() end 
 end
@@ -222,6 +280,8 @@ local function _setupTowers()
 			trove:Add(Observers.observeTag("BuildFloor", function(roomCell: Model)
 				return mountBuildFloor(roomCell, isOwner)
 			end, {towerFolder}))
+			
+			return function() trove:Destroy() end 
 		end)
 	end)
 end

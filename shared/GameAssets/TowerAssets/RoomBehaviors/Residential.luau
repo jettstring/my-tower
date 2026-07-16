@@ -15,7 +15,6 @@ local GameAssets = ReplicatedStorage.GameAssets
 local TowersFolder = workspace.PlayerTowers
 local TowerAssets = GameAssets.TowerAssets
 local Tower = require(TowerAssets.Tower)
-local Column = require(TowerAssets.Column)
 local TowerUtil = require(TowerAssets.TowerUtil)
 local Room = require(TowerAssets.Room)
 
@@ -30,7 +29,6 @@ local RoomUtil = require(RoomAssets.RoomUtil)
 
 type Profile = ProfileTemplate.ProfileTemplate
 type TowerData = ProfileTemplate.TowerData
-type ColumnData = ProfileTemplate.ColumnData
 type ElevatorData = ProfileTemplate.ElevatorData
 type SerializedRoom = ProfileTemplate.SerializedRoom
 

@@ -15,9 +15,10 @@ local GameAssets = ReplicatedStorage.GameAssets
 -- Tower Assets
 local TowersFolder = workspace.PlayerTowers
 local TowerAssets = GameAssets.TowerAssets
-local Column = require(TowerAssets.Column)
 local TowerUtil = require(TowerAssets.TowerUtil)
 local Room = require(TowerAssets.Room)
+local Elevator = require(TowerAssets.Elevator)
+local Lobby = require(TowerAssets.Lobby)
 
 -- Room Assets
 local RoomAssets = GameAssets.RoomAssets
@@ -31,12 +32,12 @@ local LobbyModels = RoomAssets.LobbyModels
 
 type Profile = ProfileTemplate.ProfileTemplate
 type TowerData = ProfileTemplate.TowerData
-type ColumnData = ProfileTemplate.ColumnData
 type ElevatorData = ProfileTemplate.ElevatorData
 type SerializedRoom = ProfileTemplate.SerializedRoom
 
-type Column = Column.Column
 type Room = Room.Room
+type Elevator = Elevator.Elevator
+type Lobby = Lobby.Lobby
 
 type RoomDefinition = RoomDefinitions.RoomDefinition
 
@@ -61,8 +62,10 @@ function Tower.new(ownerPlayer: Player, TowerFolder: Folder, services: any)
 	}
 	
 	self.Rooms = {}       -- { [id]: Room } -- flat table of all rooms
-	self.RoomsByCell = {} -- { [floor]: { [column]: Room } } derived spatial index of rooms
-	self.Columns = {}     -- { [number]: Column }
+	self.Lobby = nil
+	self.Elevator = nil
+	self.BuildFloors = {} :: {[number]: Model} -- { [columnIndex]: model }
+	
 
 	self:_Setup()
 	if not self.State.Active then
@@ -94,29 +97,22 @@ function Tower:_Setup()
 	self:_SetupSpawn()
 	self:UpdateOwnerDisplay()
 	
-	
 	-- hydrate tower from profile
 	local profile: Profile = self.Services.DataService:GetProfile(owner)
 	if not profile then warn("[_Setup] No profile found for player") return end
 	local towerData: TowerData = profile.TowerData
 	self.TowerData = towerData
-	self:_SetupColumns(towerData)
 	self:_SetupRooms(towerData)
 	
+	self.Lobby = self.Trove:Add(Lobby.new(self, self.ColumnData, self.Services))
+	self.Elevator = self.Trove:Add(Elevator.new(self, self.ColumnData, self.Services))
 	
+	self:RefreshBuildFloors()
+		
 	self.TowerFolder:SetAttribute("Owner", owner.UserId)
 	self.State.Active = true
 end
 
-
-function Tower:_SetupColumns(towerData: TowerData)
-	for columnIndex, columnData: ColumnData in towerData.columns do
-		local column = Column.new(self, columnIndex, columnData, self.Services)
-		if not column then warn("[_SetupColumns] Failed to create column", columnIndex) return end
-		self.Columns[columnIndex] = column
-	end
-	
-end
 
 function Tower:_SetupRooms(towerData: TowerData)
 	-- rooms
@@ -124,7 +120,6 @@ function Tower:_SetupRooms(towerData: TowerData)
 		self:CreateRoom(serializedRoomData)
 	end
 end
-
 
 
 function Tower:_SetupSpawn()
@@ -157,42 +152,73 @@ function Tower:CreateRoom(roomData: SerializedRoom)
 	
 	self.Trove:Add(room)
 	self.Rooms[roomId] = room
-	self.RoomsByCell[roomData.floor] = self.RoomsByCell[roomData.floor] or {}
-	self.RoomsByCell[roomData.floor][roomData.column] = room
 	
 	print("[AddRoom] Added room:", roomId, room)
 end
 
 function Tower:AddRoom(columnIndex: number): Room?
-	local column: Column = self.Columns[columnIndex]
-	if not column then warn("[AddRoom] No column found at index:", columnIndex) return end
+	-- valid column check
+	if not table.find(self:GetBuildableColumns(), columnIndex) then
+		warn("[AddRoom] Invalid column index:", columnIndex)
+		return
+	end
 	
 	local roomData: SerializedRoom = {
 		id = HttpService:GenerateGUID(false),
-		floor = column:GetTopFloor() + 1,
+		floor = self:GetColumnTopFloor(columnIndex) + 1,
 		column = columnIndex,
 		state = "Empty"
 	}
 	table.insert(self.TowerData.rooms, roomData)
 	self:CreateRoom(roomData)
-	column:RefreshBuildFloor()
+	self:RefreshColumnBuildFloor(columnIndex)
 	
 	return self.Rooms[roomData.id]
 end
 
-function Tower:RefreshState()
-	local owner: Player = self.Owner
-	local profile: Profile = self.Services.DataService:GetProfile(owner)
-	if not profile then warn("[_Setup] No profile found for player") return end
-	local towerData: TowerData = profile.TowerData
 
-	-- update room expansions
-	local maxRooms = TowerUtil.MAX_COLUMN_ROOMS
-	for columnIndex, column: Column in self.Columns do
-		local columnData: ColumnData = towerData.columns[columnIndex]
-		if not columnData then warn("[UpdateState] No columnData found for index:", columnIndex) continue end
-		
-		local currentRoomCount = #columnData.rooms
+function Tower:RefreshColumnBuildFloor(columnIndex: number)
+	print("[RefreshColumnBuildFloor] Refreshing build floor for column:", columnIndex)
+	local nextFloor = self:GetColumnTopFloor(columnIndex) + 1
+	local floorCap = 10 -- TODO: derive 
+	
+	local columnBoundsPart = self.TowerFolder.Tower.ColumnBoundParts:FindFirstChild(tostring(columnIndex))
+	if not columnBoundsPart then warn("[_Setup] No columnBoundsPart found for column:", columnIndex) return end
+
+	local slot = self.BuildFloors[columnIndex]
+	if nextFloor > floorCap then
+		warn("Floor cap reached for column:", columnIndex)
+		if slot then
+			slot:Destroy()
+			self.BuildFloors[columnIndex] = nil
+		end
+		return
+	end
+
+	local towerModel: Model = self.TowerFolder.Tower
+	if not slot then
+		slot = RoomAssets.RoomCellTemplate:Clone()
+		slot.Name = "BuildFloor"
+		slot:AddTag("BuildFloor")
+		slot:SetAttribute("Column", columnIndex)
+		slot.Parent = towerModel.Rooms
+		self.Trove:Add(slot)
+		self.BuildFloors[columnIndex] = slot
+	end
+
+	-- position
+	slot:PivotTo(TowerUtil.getCellPivot(columnBoundsPart, nextFloor))
+
+	slot:SetAttribute("Floor", nextFloor)
+	slot:SetAttribute("Price", self.Services.TowerService:GetFloorPrice(self.Owner, columnIndex, nextFloor))
+end
+
+
+
+
+function Tower:RefreshBuildFloors()
+	for _, columnIndex in self:GetBuildableColumns() do
+		self:RefreshColumnBuildFloor(columnIndex)
 	end
 end
 
@@ -200,7 +226,7 @@ function Tower:UpdateOwnerDisplay()
 	local owner: Player = self.Owner
 	local towerModel: Model = self.TowerFolder:FindFirstChild("Tower")
 	local towerComponents = towerModel:WaitForChild("Components")
-	
+
 	-- 
 	local NUMERALS = {"I", "II", "III"}
 	local playerRank, rankTier = "Bronze", 1 -- TODO: read player ranking info
@@ -208,17 +234,17 @@ function Tower:UpdateOwnerDisplay()
 		ColorSequenceKeypoint.new(0, Color3.fromRGB(209, 49, 0)),
 		ColorSequenceKeypoint.new(1, Color3.fromRGB(93, 52, 25))
 	}
-	
-	
+
+
 	-- billboard
 	local billboardGui = towerComponents.OwnerBillboard.BillboardGui
 	local nameLabel = billboardGui.Display.NameLabel
 	local avatarDisplay = billboardGui.Display.AvatarDisplay
 	local rankDisplay = billboardGui.Display.RankDisplay
 	local rankLabel = rankDisplay.RankLabel
-	
+
 	nameLabel.Text = owner.DisplayName
-	
+
 	local playerUserId = owner.UserId
 	if playerUserId < 0 then playerUserId = 1 end -- fallback
 	local success, playerThumbnail = pcall(function()
@@ -231,10 +257,29 @@ function Tower:UpdateOwnerDisplay()
 
 	rankLabel.Text = string.format("%s %s", playerRank, NUMERALS[rankTier])
 	rankLabel.UIGradient.Color = rankColor
-	
+
 	-- tower sign
-	
+
 end
+
+--------------------------------------------------
+-- HELPERS -- 
+--------------------------------------------------
+
+function Tower:GetColumnTopFloor(columnIndex: number): number
+	local topFloor = 0
+	for _, roomData: SerializedRoom in self.TowerData.rooms do
+		if roomData.column == columnIndex and roomData.floor > topFloor then
+			topFloor = roomData.floor
+		end
+	end
+	return topFloor
+end
+
+function Tower:GetBuildableColumns(): {number}
+	return {-1, 1} -- TODO: lane unlock rule (adjacency / purchases) lands here, one place
+end
+
 
 function Tower:Destroy()
 	self.Trove:Destroy()
@@ -243,22 +288,15 @@ function Tower:Destroy()
 end
 
 
-
-
---------------------------------------------------
--- HELPERS -- 
---------------------------------------------------
-
-
 export type Tower = typeof(setmetatable({} :: {
 	Services: {},
 	Owner: Player,
 	TowerFolder: Folder,
 	TowerData: TowerData,
 	State: {},
-	Columns: {[number]: Column},
 	Rooms: {[string]: Room},
-	RoomsByCell: {[number]: {Room}},
+	Lobby: Lobby,
+	Elevator: Elevator,
 	
 }, Tower))
 
