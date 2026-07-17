@@ -94,7 +94,7 @@ local function attemptBuildFloor(player: Player, columnIndex: number)
 	end
 	
 	TowerService.Services.DataService:IncrementCurrency(player, "Money", -floorPrice, "Build Floor")
-	tower:AddRoom(columnIndex)
+	tower:AddFloor(columnIndex)
 end
 
 local function attemptAssignRoomType(player: Player, roomId: string, roomType: string)
@@ -179,6 +179,14 @@ function TowerService:GetFloorPrice(player: Player, columnIndex: number, floor: 
 	-- TODO: price modifiers
 	
 	return price
+end
+
+function TowerService:GetUnlockedColumns(player: Player): {number}
+	local unlocked = {-2, -1, 1, 2} -- default center columns
+	
+	-- TODO: read extra unlocks from future expansion upgrades, gamepasses, etc
+	
+	return unlocked
 end
 
 function TowerService:RollRoomKeyFromType(player: Player, roomType: string): string?

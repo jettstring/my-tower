@@ -137,29 +137,35 @@ end
 -- ACTIONS -- 
 --------------------------------------------------
 
-function Tower:CreateRoom(roomData: SerializedRoom)
+function Tower:CreateRoom(roomData: SerializedRoom): Room?
+	if not self:IsValidRoomPlacement(roomData.column, roomData.floor) then
+		warn("[CreateRoom] Invalid room placement:", roomData)
+		return 
+	end
+	
 	local roomId = roomData.id 
 	if self.Rooms[roomId] then
-		warn("[AddRoom] roomID already exists:", roomId, "for", roomData)
+		warn("[CreateRoom] roomID already exists:", roomId, "for", roomData)
 		return
 	end
 	
 	local room: Room = Room.new(self, roomData, self.Services)
 	if not room then
-		warn("[AddRoom] Failed to create room:", roomData)
+		warn("[CreateRoom] Failed to create room:", roomData)
 		return
 	end	
 	
 	self.Trove:Add(room)
 	self.Rooms[roomId] = room
 	
-	print("[AddRoom] Added room:", roomId, room)
+	print("[CreateRoom] Created room:", roomId, room)
+	return room
 end
 
-function Tower:AddRoom(columnIndex: number): Room?
+function Tower:AddFloor(columnIndex: number): Room?
 	-- valid column check
 	if not table.find(self:GetBuildableColumns(), columnIndex) then
-		warn("[AddRoom] Invalid column index:", columnIndex)
+		warn("[AddFloor] column is not buildable:", columnIndex)
 		return
 	end
 	
@@ -170,10 +176,17 @@ function Tower:AddRoom(columnIndex: number): Room?
 		state = "Empty"
 	}
 	table.insert(self.TowerData.rooms, roomData)
-	self:CreateRoom(roomData)
-	self:RefreshColumnBuildFloor(columnIndex)
 	
-	return self.Rooms[roomData.id]
+	local room: Room? = self:CreateRoom(roomData)
+	if not room then
+		warn("[AddFloor] Failed to add room to column:", columnIndex)
+		return nil
+	end
+	
+	self:RefreshBuildFloors()
+	
+	print("[AddFloor] Added new floor room to column:", columnIndex)
+	return room
 end
 
 
@@ -186,6 +199,18 @@ function Tower:RefreshColumnBuildFloor(columnIndex: number)
 	if not columnBoundsPart then warn("[_Setup] No columnBoundsPart found for column:", columnIndex) return end
 
 	local slot = self.BuildFloors[columnIndex]
+
+	-- adjaceny check
+	if not self:CanBuildInColumn(columnIndex) then
+		warn("Cannot build in column:", columnIndex)
+		if slot then
+			slot:Destroy()
+			self.BuildFloors[columnIndex] = nil
+		end
+		return
+	end
+
+	-- height cap
 	if nextFloor > floorCap then
 		warn("Floor cap reached for column:", columnIndex)
 		if slot then
@@ -214,10 +239,8 @@ function Tower:RefreshColumnBuildFloor(columnIndex: number)
 end
 
 
-
-
 function Tower:RefreshBuildFloors()
-	for _, columnIndex in self:GetBuildableColumns() do
+	for _, columnIndex in self.Services.TowerService:GetUnlockedColumns(self.Owner) do
 		self:RefreshColumnBuildFloor(columnIndex)
 	end
 end
@@ -266,9 +289,37 @@ end
 -- HELPERS -- 
 --------------------------------------------------
 
+function Tower:GetRoomAt(columnIndex: number, floor: number): Room?
+	for _, room in self.Rooms do
+		if room.RoomData.column == columnIndex and room.RoomData.floor == floor then
+			return room
+		end
+	end
+	return nil
+end
+
+function Tower:IsValidRoomPlacement(columnIndex: number, floor: number): boolean
+	if columnIndex == 0 then return false end 
+	
+	-- floor height 
+	if floor < 1 or floor > TowerUtil.MAX_COLUMN_ROOMS then return false end -- TODO: derive floor cap from TowerService
+	
+	-- duplicate 
+	if self:GetRoomAt(columnIndex, floor) then return false end
+	
+	-- floating room 
+	if floor > 1 and not self:GetRoomAt(columnIndex, floor - 1) then return false end
+	
+	-- inner adjacency
+	if math.abs(columnIndex) == 1 then return true end -- innermost, exempt
+	local innerColumn = columnIndex - math.sign(columnIndex)
+	return self:GetRoomAt(innerColumn, floor) ~= nil
+end
+
 function Tower:GetColumnTopFloor(columnIndex: number): number
 	local topFloor = 0
-	for _, roomData: SerializedRoom in self.TowerData.rooms do
+	for _, room: Room in self.Rooms do
+		local roomData: SerializedRoom = room.RoomData
 		if roomData.column == columnIndex and roomData.floor > topFloor then
 			topFloor = roomData.floor
 		end
@@ -276,8 +327,23 @@ function Tower:GetColumnTopFloor(columnIndex: number): number
 	return topFloor
 end
 
+function Tower:CanBuildInColumn(columnIndex: number): boolean
+	local nextFloor = self:GetColumnTopFloor(columnIndex) + 1
+	if nextFloor > TowerUtil.MAX_COLUMN_ROOMS then return false end
+	if math.abs(columnIndex) == 1 then return true end -- innermost, exempt
+	local innerColumn = columnIndex - math.sign(columnIndex) -- 3 -> 2, -3 -> -2
+	return self:GetColumnTopFloor(innerColumn) >= nextFloor
+end
+
 function Tower:GetBuildableColumns(): {number}
-	return {-1, 1} -- TODO: lane unlock rule (adjacency / purchases) lands here, one place
+	local buildable = {}
+	for _, columnIndex in self.Services.TowerService:GetUnlockedColumns(self.Owner) do
+		if self:CanBuildInColumn(columnIndex) then
+			table.insert(buildable, columnIndex)
+		end
+	end	
+	
+	return buildable
 end
 
 

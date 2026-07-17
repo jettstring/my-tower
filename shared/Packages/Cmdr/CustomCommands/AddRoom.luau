@@ -10,7 +10,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 --end
 
 return {
-	Name = "addRoom";
+	Name = "addFloor";
 	Aliases = {};
 	Description = "";
 	Group = "DefaultAdmin";
