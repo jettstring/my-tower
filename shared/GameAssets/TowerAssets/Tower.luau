@@ -19,6 +19,7 @@ local TowerUtil = require(TowerAssets.TowerUtil)
 local Room = require(TowerAssets.Room)
 local Elevator = require(TowerAssets.Elevator)
 local Lobby = require(TowerAssets.Lobby)
+local Resident = require(TowerAssets.Resident)
 
 -- Room Assets
 local RoomAssets = GameAssets.RoomAssets
@@ -34,10 +35,12 @@ type Profile = ProfileTemplate.ProfileTemplate
 type TowerData = ProfileTemplate.TowerData
 type ElevatorData = ProfileTemplate.ElevatorData
 type SerializedRoom = ProfileTemplate.SerializedRoom
+type ResidentData = ProfileTemplate.ResidentData
 
 type Room = Room.Room
 type Elevator = Elevator.Elevator
 type Lobby = Lobby.Lobby
+type Resident = Resident.Resident
 
 type RoomDefinition = RoomDefinitions.RoomDefinition
 
@@ -61,11 +64,11 @@ function Tower.new(ownerPlayer: Player, TowerFolder: Folder, services: any)
 		Active = false,
 	}
 	
-	self.Rooms = {}       -- { [id]: Room } -- flat table of all rooms
+	self.Rooms = {} :: {[string]: Room} 
+	self.Residents = {}  :: {[string]: Resident} 
 	self.Lobby = nil
 	self.Elevator = nil
-	self.BuildFloors = {} :: {[number]: Model} -- { [columnIndex]: model }
-	
+	self.BuildFloors = {} :: {[number]: Model} 
 
 	self:_Setup()
 	if not self.State.Active then
@@ -103,6 +106,7 @@ function Tower:_Setup()
 	local towerData: TowerData = profile.TowerData
 	self.TowerData = towerData
 	self:_SetupRooms(towerData)
+	self:_SetupResidents(towerData)
 	
 	self.Lobby = self.Trove:Add(Lobby.new(self, self.ColumnData, self.Services))
 	self.Elevator = self.Trove:Add(Elevator.new(self, self.ColumnData, self.Services))
@@ -113,7 +117,6 @@ function Tower:_Setup()
 	self.State.Active = true
 end
 
-
 function Tower:_SetupRooms(towerData: TowerData)
 	-- rooms
 	for _, serializedRoomData: SerializedRoom in towerData.rooms do
@@ -121,6 +124,12 @@ function Tower:_SetupRooms(towerData: TowerData)
 	end
 end
 
+function Tower:_SetupResidents(towerData: TowerData)
+	-- residents
+	for _, residentData: ResidentData in towerData.residents do
+		self:CreateResident(residentData)
+	end
+end
 
 function Tower:_SetupSpawn()
 	local owner: Player = self.Owner
@@ -151,7 +160,7 @@ function Tower:CreateRoom(roomData: SerializedRoom): Room?
 	
 	local room: Room = Room.new(self, roomData, self.Services)
 	if not room then
-		warn("[CreateRoom] Failed to create room:", roomData)
+		warn("[CreateRoom] Failed to create room object:", roomData)
 		return
 	end	
 	
@@ -188,7 +197,6 @@ function Tower:AddFloor(columnIndex: number): Room?
 	print("[AddFloor] Added new floor room to column:", columnIndex)
 	return room
 end
-
 
 function Tower:RefreshColumnBuildFloor(columnIndex: number)
 	print("[RefreshColumnBuildFloor] Refreshing build floor for column:", columnIndex)
@@ -238,11 +246,30 @@ function Tower:RefreshColumnBuildFloor(columnIndex: number)
 	slot:SetAttribute("Price", self.Services.TowerService:GetFloorPrice(self.Owner, columnIndex, nextFloor))
 end
 
-
 function Tower:RefreshBuildFloors()
 	for _, columnIndex in self.Services.TowerService:GetUnlockedColumns(self.Owner) do
 		self:RefreshColumnBuildFloor(columnIndex)
 	end
+end
+
+function Tower:CreateResident(residentData: ResidentData): Resident?
+	local residentId = residentData.id
+	if self.Residents[residentId] then
+		warn("[CreateResident] Resident already exists:", residentId)
+		return
+	end
+	
+	local resident: Resident = Resident.new(self, residentData, self.Services)
+	if not resident then
+		warn("[CreateResident] Failed to create resident object:", residentId)
+		return
+	end
+	
+	self.Trove:Add(resident)
+	self.Residents[residentId] = resident
+	
+	print("[CreateResident] Created new resident object:", resident)
+	return resident	
 end
 
 function Tower:UpdateOwnerDisplay()
@@ -346,13 +373,30 @@ function Tower:GetBuildableColumns(): {number}
 	return buildable
 end
 
+function Tower:GetOccupants(roomId: string): {Resident}
+	local occupants = {}
+	for _, resident: Resident in self.Residents do
+		if resident.ResidentData.homeRoomId == roomId then
+			table.insert(occupants, resident)
+		end
+	end
+	return occupants
+end
+
+function Tower:GetWorkerAtSlot(roomId: string, slot: number): Resident?
+	for _, resident: Resident in self.Residents do
+		if resident.ResidentData.jobRoomId == roomId and resident.ResidentData.jobSlot == slot then
+			return resident
+		end
+	end
+	return nil
+end
 
 function Tower:Destroy()
 	self.Trove:Destroy()
 	self.TowerFolder:SetAttribute("Owner", nil)
 	print("[Tower] Tower destroyed:", self.TowerFolder.Name)
 end
-
 
 export type Tower = typeof(setmetatable({} :: {
 	Services: {},
@@ -361,6 +405,7 @@ export type Tower = typeof(setmetatable({} :: {
 	TowerData: TowerData,
 	State: {},
 	Rooms: {[string]: Room},
+	Residents: {[string]: Resident},
 	Lobby: Lobby,
 	Elevator: Elevator,
 	

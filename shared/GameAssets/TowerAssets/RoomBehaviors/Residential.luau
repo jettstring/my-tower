@@ -55,17 +55,28 @@ function Residential.new(room: Room)
 	return self
 end
 
-
---------------------------------------------------
--- SETUP -- 
---------------------------------------------------
-
-
 --------------------------------------------------
 -- ACTIONS -- 
 --------------------------------------------------
 
+function Residential:_UpdateAttributes()
+	local room: Room = self.Room
+	local roomData: SerializedRoom = room.RoomData
+	local cellModel = room.CellModel
+	
+	cellModel:SetAttribute("OccupantCount", #room.Tower:GetOccupants(room.RoomId))
+end
+
+
+--------------------------------------------------
+-- HELPERS -- 
+--------------------------------------------------
+
 function Residential:Destroy()
+	local room: Room = self.Room
+	local cellModel = room.CellModel
+	cellModel:SetAttribute("OccupantCount", nil)
+	
 	self.Trove:Destroy()
 end
 

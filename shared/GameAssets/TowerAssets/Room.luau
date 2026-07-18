@@ -175,8 +175,11 @@ function Room:_UpdateAttributes()
 	cellModel:SetAttribute("Floor", roomData.floor)
 	cellModel:SetAttribute("Column", roomData.column)
 	cellModel:SetAttribute("CustomName", roomData.customName)
-	cellModel:SetAttribute("ConstructionEndsAt", roomData.constructionEndTime)
 	cellModel:SetAttribute("State", roomData.state)
+	
+	if self.Behavior and self.Behavior._UpdateAttributes then
+		self.Behavior:_UpdateAttributes()
+	end
 end
 
 --------------------------------------------------
@@ -210,6 +213,7 @@ export type Room = typeof(setmetatable({} :: {
 	RoomId: string,
 	BehaviorName: string,
 	Behavior: any,
+	CellModel: Model,
 }, Room))
 
 return Room

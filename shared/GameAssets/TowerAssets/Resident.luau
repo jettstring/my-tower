@@ -88,15 +88,36 @@ function Resident:_UpdateAttributes()
 	residentFolder:SetAttribute("JobRoomId", residentData.jobRoomId)
 	residentFolder:SetAttribute("JobSlot", residentData.jobSlot)
 	
-	-- stats
-	for statName, statValue in pairs(residentData.stats) do
-		residentFolder:SetAttribute(statName, statValue)
+	-- skills
+	for skillName, value in pairs(residentData.skills) do
+		residentFolder:SetAttribute(skillName, value)
 	end
 end
 
 --------------------------------------------------
 -- ACTIONS -- 
 --------------------------------------------------
+
+function Resident:AssignHome(roomId: string)
+	local residentData: ResidentData = self.ResidentData
+	
+	if roomId == residentData.homeRoomId then return end
+
+	if roomId == nil or roomId == "" then
+		warn("[AssignHome] Invalid room ID for home assignment")
+		return
+	end
+	
+	local oldRoomId = residentData.homeRoomId
+	residentData.homeRoomId = roomId
+	self:_UpdateAttributes()
+end
+
+function Resident:AssignJob(roomId: string | nil)
+	local residentData: ResidentData = self.ResidentData
+
+end
+
 
 function Resident:Destroy()
 	self.Trove:Destroy()

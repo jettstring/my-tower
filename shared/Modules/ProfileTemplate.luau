@@ -6,24 +6,24 @@ local ProfileTemplate = {
 	
 	TowerData = {
 		rooms = {
-			--{
-			--	id = "firstRoomEva",
-			--	roomDefKey = "Rustic Apartments",
-			--	state = "Occupied",
-			--	column = 1,
-			--	floor = 1,
-			--	customName = nil,
-			--	customRoomColors = nil,
-			--},
-			--{
-			--	id = "secondRoomEva",
-			--	roomDefKey = "Rustic Apartments",
-			--	state = "Occupied",
-			--	column = -1,
-			--	floor = 1,
-			--	customName = nil,
-			--	customRoomColors = nil,
-			--},
+			{
+				id = "1234",
+				roomDefKey = "Rustic Apartments",
+				state = "Occupied",
+				column = 1,
+				floor = 1,
+				customName = nil,
+				customRoomColors = nil,
+			},
+			{
+				id = "54321",
+				roomDefKey = "Food place #1",
+				state = "Occupied",
+				column = -1,
+				floor = 1,
+				customName = nil,
+				customRoomColors = nil,
+			},
 		},
 		
 		elevatorData = {
@@ -36,6 +36,23 @@ local ProfileTemplate = {
 			lobbySkin = nil,
 		},
 		
+		residents = {
+			{
+				id = "1",
+				name = "Jett",
+				skills = {
+					Food = 1,
+					Retail = 1,
+					Service = 1,
+					Recreation = 1,
+				},
+				dreamJob = "Food",
+				homeRoomId = "1234",
+				jobRoomId = "54321",
+				jobSlot = 1,
+			}
+		},
+		
 	} :: TowerData,
 	
 }
@@ -44,6 +61,7 @@ export type ProfileTemplate = typeof(ProfileTemplate)
 
 export type TowerData = {
 	rooms: { SerializedRoom },
+	residents: { ResidentData },
 	elevatorData: ElevatorData,
 	lobbyData: LobbyData,
 }
@@ -61,7 +79,7 @@ export type SerializedRoom = {
 	constructionEndTime: number?,
 	
 	-- commercial
-	stockSlots: { [number]: StockData }?,
+	stockSlots: { [number]: SlotStockData }?,
 }
 
 export type ElevatorData = {
@@ -74,7 +92,7 @@ export type LobbyData = {
 	lobbySkin: string?,
 }
 
-export type StockData = {
+export type SlotStockData = {
 	amount: number,
 	restockEndsAt: number?,
 }
@@ -82,7 +100,7 @@ export type StockData = {
 export type ResidentData = {
 	id: string,
 	name: string,
-	stats: {[string]: number},
+	skills: {[string]: number},
 	dreamJob: string?,
 	
 	homeRoomId: string?, -- residential room,

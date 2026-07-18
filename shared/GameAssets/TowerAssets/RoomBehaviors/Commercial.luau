@@ -31,6 +31,7 @@ type Profile = ProfileTemplate.ProfileTemplate
 type TowerData = ProfileTemplate.TowerData
 type ElevatorData = ProfileTemplate.ElevatorData
 type SerializedRoom = ProfileTemplate.SerializedRoom
+type SlotStockData  = ProfileTemplate.SlotStockData
 
 type Tower = Tower.Tower
 type Room = Room.Room
@@ -55,20 +56,40 @@ function Commercial.new(room: Room)
 
 	return self
 end
-
-
---------------------------------------------------
--- SETUP -- 
---------------------------------------------------
-
-
 --------------------------------------------------
 -- ACTIONS -- 
 --------------------------------------------------
 
+function Commercial:_UpdateAttributes()
+	local room: Room = self.Room
+	local roomData: SerializedRoom = room.RoomData
+	local cellModel = room.CellModel
+
+	for slot = 1, 3 do
+		local stockSlot: SlotStockData = roomData.stockSlots[slot]
+		cellModel:SetAttribute("StockAmount" .. slot, stockSlot.amount)
+		cellModel:SetAttribute("RestockEndsAt" .. slot, stockSlot.restockEndsAt)
+		cellModel:SetAttribute("SlotStaffed" .. slot, room.Tower:GetWorkerAtSlot(room.RoomId, slot))
+	end
+end
+
+
+--------------------------------------------------
+-- HELPERS -- 
+--------------------------------------------------
+
 function Commercial:Destroy()
+	local room: Room = self.Room
+	local cellModel = room.CellModel
+	for slot = 1, 3 do
+		cellModel:SetAttribute("StockAmount" .. slot, nil)
+		cellModel:SetAttribute("RestockEndsAt" .. slot, nil)
+		cellModel:SetAttribute("SlotStaffed" .. slot, nil)
+	end
+
 	self.Trove:Destroy()
 end
+
 
 export type Commercial = typeof(setmetatable({} :: {}, Commercial))
 

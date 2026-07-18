@@ -59,6 +59,14 @@ end
 -- ACTIONS -- 
 --------------------------------------------------
 
+function Construction:_UpdateAttributes()
+	local room: Room = self.Room
+	local roomData: SerializedRoom = room.RoomData
+	local cellModel = room.CellModel
+	
+	cellModel:SetAttribute("ConstructionEndsAt", roomData.constructionEndTime)
+end
+
 function Construction:StartConstruction(roomDefKey: string)
 	local room: Room = self.Room
 	if room.RoomData.state ~= "Empty" then warn("Room is not empty") return end
@@ -73,6 +81,12 @@ function Construction:StartConstruction(roomDefKey: string)
 	self:_RunTimer(room.RoomData.constructionEndTime)
 end
 
+function Construction:CompleteConstruction()
+	local room: Room = self.Room
+	room.RoomData.constructionEndTime = nil
+	room:SetState("Occupied")
+end
+
 --------------------------------------------------
 -- PRIVATE -- 
 --------------------------------------------------
@@ -80,23 +94,21 @@ end
 function Construction:_RunTimer(endTimestamp: number)
 	local remaining = endTimestamp - os.time()
 	if remaining <= 0 then
-		self:_Complete()
+		self:CompleteConstruction()
 		return
 	end
 	
 	self.Trove:Add(task.delay(remaining, function()
-		self:_Complete()
+		self:CompleteConstruction()
 	end))
-end
-
-function Construction:_Complete()
-	local room: Room = self.Room
-	room.RoomData.constructionEndTime = nil
-	room:SetState("Occupied")
 end
 
 
 function Construction:Destroy()
+	local room: Room = self.Room
+	local cellModel = room.CellModel
+	cellModel:SetAttribute("ConstructionEndsAt", nil)
+	
 	self.Trove:Destroy()
 end
 
