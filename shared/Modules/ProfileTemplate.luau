@@ -54,12 +54,14 @@ export type SerializedRoom = {
 	column: number,
 	floor: number,
 	state: "Constructing" | "Empty" | "Occupied",
+	customName: string?,
+	customRoomColors: {[string]: Color3}?,
 	
 	-- construction
 	constructionEndTime: number?,
 	
-	customName: string?,
-	customRoomColors: {[string]: Color3}?,
+	-- commercial
+	stockSlots: { [number]: StockData }?,
 }
 
 export type ElevatorData = {
@@ -72,6 +74,10 @@ export type LobbyData = {
 	lobbySkin: string?,
 }
 
+export type StockData = {
+	amount: number,
+	restockEndsAt: number?,
+}
 
 
 return ProfileTemplate

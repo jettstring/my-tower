@@ -27,7 +27,6 @@ local RoomAssets = GameAssets.RoomAssets
 local RoomUtil = require(RoomAssets.RoomUtil)
 local RoomDefinitions = require(RoomAssets.RoomDefinitions)
 local RoomModels = RoomAssets.RoomModels
-local RoofDisplays = RoomAssets.RoofDisplays
 local RoomBillboards = RoomAssets.RoomBillboards
 
 
@@ -183,8 +182,7 @@ local function mountAssignTypeButton(roomCell: Model)
 	return function() trove:Destroy() end 
 end
 
-local function mountConstructionTimer(roomCell: Model, isOwner: boolean): () -> ()
-	-- mounted per VALUE of ConstructionEndsAt: billboard, button, and loop all live exactly that long
+local function mountConstructionTimer(roomCell: Model, isOwner: boolean)
 	return Observers.observeAttribute(roomCell, "ConstructionEndsAt", function(endsAt: number)
 		local trove = Trove.new()
 
@@ -216,29 +214,90 @@ local function mountConstructionTimer(roomCell: Model, isOwner: boolean): () -> 
 	end)
 end
 
+local function mountStockSlots(roomCell: Model, roofDisplay: SurfaceGui)
+	local trove = Trove.new()
+	
+	local stockStatusDisplay = trove:Add(RoomAssets.RoofDisplay.StockStatusDisplay:Clone())
+	stockStatusDisplay.Parent = roofDisplay
+	stockStatusDisplay.Visible = true
+	
+	-- remove existing ui instances
+	for _, imageLabel in stockStatusDisplay:QueryDescendants("ImageLabel") do imageLabel:Destroy() end
+	
+	for slotIndex = 1, 3 do
+		local currentIconState: string? = nil
+		local iconTrove = trove:Extend()
+		
+		local function updateStockIcon()
+			local stockAmount = roomCell:GetAttribute("StockAmount" .. slotIndex) or 0
+			local restocking = roomCell:GetAttribute("RestockEndsAt" .. slotIndex) ~= nil
+			local iconState = restocking and "Restocking" or (stockAmount > 0 and "Selling" or "OutOfStock")
+			
+			if iconState == currentIconState then return end
+			if iconTrove then iconTrove:Clean() end
+			currentIconState = iconState
+			
+			local slotFrame = iconTrove:Add(RoomAssets.RoofDisplay.StockStatusDisplay.UIListLayout.StockSlotTemplate:Clone())
+			slotFrame.Name = slotIndex
+			slotFrame.Parent = stockStatusDisplay
+			slotFrame.LayoutOrder = slotIndex
+			slotFrame.Visible = true
+		end
+		
+		trove:Connect(roomCell:GetAttributeChangedSignal("RestockEndsAt" .. slotIndex), updateStockIcon)
+		trove:Connect(roomCell:GetAttributeChangedSignal("StockAmount" .. slotIndex), updateStockIcon)
+		updateStockIcon()
+	end
+	
+	return function() trove:Destroy() end
+end
+
 local function mountRoofDisplay(roomCell: Model, isOwner: boolean)
 	return Observers.observeAttribute(roomCell, "State", function(state: string)
 		
 		local roofPart = roomCell:FindFirstChild("Roof")
 		if not roofPart then return end
 		
-		local template: SurfaceGui?
-		if state == "Constructing" then
-			template = RoofDisplays.Construction
-		elseif state == "Occupied" then
-			local defKey = roomCell:GetAttribute("RoomDefKey")
-			local roomDef: RoomDefinition = defKey and RoomDefinitions.ByName[defKey]
-			if not roomDef then warn("No room def for key: ", defKey) return end
-			template = RoofDisplays[roomDef.roomType]
-		end
-		if not template then return end
-		
 		local trove = Trove.new()
-		local display: SurfaceGui = template:Clone()
-		trove:Add(display)
-		display.Parent = roofPart
-		display.Adornee = roofPart
-		display.Enabled = true
+		local roofDisplay = trove:Add(RoomAssets.RoofDisplay:Clone())
+		roofDisplay.Parent = roofPart
+		roofDisplay.Adornee = roofPart
+		roofDisplay.Enabled = true
+		
+		local roomNameLabel = roofDisplay.RoomNameLabel
+		local residentsCountDisplay = roofDisplay.ResidentsCountDisplay
+		local stockStatusDisplay = roofDisplay.StockStatusDisplay
+		
+		stockStatusDisplay:Destroy()
+		residentsCountDisplay:Destroy()
+		
+		if state == "Constructing" then
+			
+		elseif state ~= "Empty" then
+			trove:Add(Observers.observeAttribute(roomCell, "RoomDefKey", function(roomDefKey: string)
+				local roomDef: RoomDefinition = RoomDefinitions.ByName[roomDefKey]
+				if not roomDef then warn("No roomDef found for key", roomDefKey) return end
+				
+				local defTrove = Trove.new()
+				
+				-- custom name
+				roomNameLabel.Text = roomDef.displayName
+				defTrove:Add(Observers.observeAttribute(roomCell, "CustomName", function(customName: string)
+					roomNameLabel.Text = customName or roomDef.displayName
+					return function()
+						roomNameLabel.Text = roomDef.displayName
+					end
+				end))
+				
+				if roomDef.roomType == "Residential" then
+					
+				elseif roomDef.roomType == "Commercial" then
+					defTrove:Add(mountStockSlots(roomCell, roofDisplay))
+				end
+				
+				return function () defTrove:Destroy() end
+			end))
+		end
 
 
 		return function() trove:Destroy() end 
