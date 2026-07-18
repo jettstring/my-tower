@@ -2020,28 +2020,13 @@
                       ]
                     }
                   ]
-                }
-              ]
-            },
-            {
-              "name": "NPCs",
-              "className": "Folder",
-              "pluginManaged": true,
-              "children": [
-                {
-                  "name": "Pathfinder",
-                  "className": "ModuleScript",
-                  "pluginManaged": true,
-                  "filePaths": [
-                    "c:/Users/jstri/Documents/Development/Projects/MyTower/code/shared/GameAssets/NPCs/Pathfinder.luau"
-                  ]
                 },
                 {
-                  "name": "NavGrid",
+                  "name": "Resident",
                   "className": "ModuleScript",
                   "pluginManaged": true,
                   "filePaths": [
-                    "c:/Users/jstri/Documents/Development/Projects/MyTower/code/shared/GameAssets/NPCs/NavGrid.luau"
+                    "c:/Users/jstri/Documents/Development/Projects/MyTower/code/shared/GameAssets/TowerAssets/Resident.luau"
                   ]
                 }
               ]

@@ -79,5 +79,16 @@ export type StockData = {
 	restockEndsAt: number?,
 }
 
+export type ResidentData = {
+	id: string,
+	name: string,
+	stats: {[string]: number},
+	dreamJob: string?,
+	
+	homeRoomId: string?, -- residential room,
+	jobRoomId: string?, -- commercial room
+	jobSlot: number?, -- 1..3 
+}
+
 
 return ProfileTemplate
