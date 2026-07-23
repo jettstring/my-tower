@@ -51,6 +51,12 @@ function Construction.new(room: Room)
 	self.Services = room.Services
 
 	self.Room = room
+	
+	self:_UpdateAttributes()
+	
+	if room.RoomData.state == "Constructing" and room.RoomData.constructionEndTime then
+		self:_RunTimer(room.RoomData.constructionEndTime)
+	end
 
 	return self
 end

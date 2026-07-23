@@ -211,7 +211,7 @@ export type Room = typeof(setmetatable({} :: {
 	Tower: any,
 	RoomData: SerializedRoom,
 	RoomId: string,
-	BehaviorName: string,
+	BehaviorName: "Construction" | "Residential" | "Commercial",
 	Behavior: any,
 	CellModel: Model,
 }, Room))

@@ -17,12 +17,17 @@ local ProfileTemplate = {
 			},
 			{
 				id = "54321",
-				roomDefKey = "Food place #1",
+				roomDefKey = "Cafe",
 				state = "Occupied",
 				column = -1,
 				floor = 1,
 				customName = nil,
 				customRoomColors = nil,
+				stockSlots = {
+					[1] = { amount = 10, restockEndsAt = nil },
+					[2] = { amount = 0, restockEndsAt = nil },
+					[3] = { amount = 0, restockEndsAt = nil },
+				}
 			},
 		},
 		
@@ -38,7 +43,7 @@ local ProfileTemplate = {
 		
 		residents = {
 			{
-				id = "1",
+				id = "abc1",
 				name = "Jett",
 				skills = {
 					Food = 1,

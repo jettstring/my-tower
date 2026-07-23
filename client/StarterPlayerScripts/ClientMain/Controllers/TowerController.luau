@@ -16,7 +16,7 @@ local playerGui = player.PlayerGui
 
 -- UI
 local Popups = playerGui:WaitForChild("Popups")
-
+local roomManagementFrame = Popups.RoomManagement
 
 -- Tower Assets
 local TowersFolder = workspace.PlayerTowers
@@ -29,12 +29,19 @@ local RoomDefinitions = require(RoomAssets.RoomDefinitions)
 local RoomModels = RoomAssets.RoomModels
 local RoomBillboards = RoomAssets.RoomBillboards
 
+-- NPC Assets
+local NPCsFolder = workspace.NPCs
+local NPCAssets = GameAssets.NPCAssets
+
 
 local remotesFolder = ReplicatedStorage:WaitForChild("Remotes")
 local remotes = {
 	BuildFloor = remotesFolder.Tower.BuildFloor,
 	AssignRoomType = remotesFolder.Tower.AssignRoomType,
 	DemolishRoom = remotesFolder.Tower.DemolishRoom,
+	RestockRoom = remotesFolder.Tower.RestockRoom,
+	RushRestock = remotesFolder.Tower.RushRestock,
+	
 
 	-- RFs
 	GetTower = remotesFolder.Tower.GetTower,
@@ -45,6 +52,7 @@ local remotes = {
 --------------------------------------------------
 
 type RoomDefinition = RoomDefinitions.RoomDefinition
+type StockDefinition = RoomDefinitions.StockDefinition
 
 --------------------------------------------------
 -- STATE --
@@ -54,6 +62,8 @@ TowerController.Controllers = {}
 TowerController.Signals = {
 	TowerAssigned = Signal.new(),
 }
+
+local roomManagmentTrove = Trove.new()
 
 local buildPromptConnections = {} :: {RBXScriptConnection}
 local assignTypePromptConnections = {} :: {RBXScriptConnection}
@@ -67,6 +77,19 @@ local assignTypePromptConnections = {} :: {RBXScriptConnection}
 --------------------------------------------------
 -- PRIVATE FUNCTIONS --
 --------------------------------------------------
+
+local function formatTime(seconds: number): string
+	local hours = math.floor(seconds / 3600)
+	local minutes = math.floor((seconds % 3600) / 60)
+	
+	if hours > 0 then
+		return string.format("%dh %dm", hours, minutes)
+	elseif minutes > 0 then
+		return string.format("%dm", minutes)
+	else
+		return string.format("%ds", seconds)
+	end
+end
 
 local function promptAssignType(roomCell: Model)
 	-- cleanup
@@ -82,7 +105,7 @@ local function promptAssignType(roomCell: Model)
 	if not roomId then warn("[promptAssignType] No room ID found for room cell: ", roomCell) return end
 	
 	local assignRoomTypeFrame = Popups.AssignRoomType
-	local closeButton = assignRoomTypeFrame.Close
+	local closeButton = assignRoomTypeFrame.Banner.Close
 	local typeButtons = assignRoomTypeFrame.RoomTypeButtons
 	local residentialButton = typeButtons.Residential
 	local commercialButtonsContainer = typeButtons.Commercial.ButtonContainer
@@ -364,6 +387,193 @@ function TowerController:GetTowerFolder(): Folder
 	return towerFolder
 end
 
+
+function TowerController:PromptRoomManagement(roomCell: Model)
+	local trove = roomManagmentTrove
+	trove:Clean()
+	
+	trove:Add(function()
+		roomManagementFrame.Visible = false
+	end)
+	
+	if not roomCell then return end
+	if not roomCell:HasTag("RoomCell") then warn("[PromptRoomManagement] Invalid room cell") return end
+	
+	local roomId = roomCell:GetAttribute("RoomId")
+	if not roomId then warn("[PromptRoomManagement] No room ID found for room cell: ", roomCell) return end
+	
+	-- resolve room
+	local state = roomCell:GetAttribute("State")
+	if not state or state ~= "Occupied" then warn("[PromptRoomManagement] Room is not occupied") return end
+	
+	local roomDefKey = roomCell:GetAttribute("RoomDefKey")
+	local roomDef: RoomDefinition? = roomDefKey and RoomDefinitions.ByName[roomDefKey]
+	if not roomDef then warn("[PromptRoomManagement] No room definition found") return end
+	
+	local bannerFrame = roomManagementFrame.Banner
+	local roomNameLabel = bannerFrame.RoomNameLabel
+	local roomOptionsFrame = roomManagementFrame.RoomOptions
+	local stockDisplay = roomManagementFrame.StockDisplay
+	local residentDisplay = roomManagementFrame.ResidentDisplay
+
+	roomManagementFrame.Visible = true
+	
+	if roomDef.roomType == "Residential" then
+		residentDisplay.Visible = true
+		stockDisplay.Visible = false
+
+	elseif roomDef.roomType == "Commercial" then
+		stockDisplay.Visible = true
+		residentDisplay.Visible = false
+		
+		local slotDisplay = stockDisplay.StockSlots
+		
+		local stockItemsFolder: Folder = roomCell:FindFirstChild("StockItems")
+		if not stockItemsFolder then warn("[PromptRoomManagement] missing StockItems folder", roomCell) return end
+		
+		for slotIndex = 1, 3 do
+			local stockFolder = stockItemsFolder:FindFirstChild(slotIndex)
+			if not stockFolder then warn("[PromptRoomManagement] missing stock item folder for slot:", slotIndex) continue end
+			
+			local displayTrove = trove:Extend()
+
+			if slotDisplay:FindFirstChild(slotIndex) then slotDisplay:FindFirstChild(slotIndex):Destroy() end
+			
+			local stockFrame = displayTrove:Add(slotDisplay.UIListLayout.StockTemplate:Clone())
+			local display = stockFrame.Display
+			local lockedFrame = display.LockedFrame
+			local nameLabel = display.NameLabel
+			local iconLabel = display.IconLabel
+			local quantityLabel = display.QuantityLabel
+			local costDisplay = display.CostDisplay
+			local restockTimeDisplay = display.RestockTimeDisplay
+			local stockButton = display.StockButton
+
+			local progressDisplay = display.ProgressDisplay
+			local progressBar = progressDisplay.ProgressBar
+			local statusLabel = progressDisplay.StatusLabel
+			local rushDisplay = progressDisplay.RushDisplay
+			local rushButton = rushDisplay.RushButton
+			local rushPriceDisplay = rushDisplay.RushPriceDisplay
+			
+			local workerDisplay = display.WorkerDisplay
+			
+			-- resolve stock definition
+			local stockDef: StockDefinition = roomDef.stockItems[slotIndex]
+			stockFrame.Visible = stockDef
+			if not stockDef then
+				warn("[PromptRoomManagement] No stockDef for slotIndex", slotIndex)
+				continue
+			end
+			
+			stockFrame.Parent = slotDisplay
+			stockFrame.Name = slotIndex
+			stockFrame.LayoutOrder = slotIndex
+			nameLabel.Text = stockDef.displayName
+			iconLabel.Image = "rbxassetid://" .. stockDef.displayImage
+			
+
+			local workerTrove = displayTrove:Extend()
+
+			local function updateDisplay()
+				workerTrove:Clean()
+
+				local residentId = stockFolder:GetAttribute("SlotWorkerId")
+				local occupied = residentId ~= nil
+
+				workerDisplay.HireLabel.Visible = not occupied
+				workerDisplay.BackgroundColor3 = occupied and Color3.fromRGB(162, 235, 255) or Color3.fromRGB(78, 95, 194)
+				workerDisplay.OuterStroke.Color = occupied and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(255, 255, 255)
+
+
+				local residentFolder: Folder = occupied and NPCsFolder.Residents:FindFirstChild(residentId)
+				if occupied and not residentFolder then warn("[PromptRoomManagement] No worker for slotIndex", slotIndex) return end
+
+				local statusTrove = workerTrove:Extend()
+
+				local function updateStockStatus()
+					statusTrove:Clean()
+
+					local stockAmount = stockFolder:GetAttribute("StockAmount") or 0
+					local restockEndsAt = stockFolder:GetAttribute("RestockEndsAt")
+					local restockTime = stockFolder:GetAttribute("RestockTime")
+					local restockCost = stockFolder:GetAttribute("RestockCost")
+					local restockQuantity = stockFolder:GetAttribute("RestockQuantity")
+					local earnings = stockFolder:GetAttribute("Earnings") or 0
+					
+					quantityLabel.Text = string.format("x%d", restockQuantity)
+					lockedFrame.Visible = not occupied
+					stockButton.GreenGradient.Enabled = occupied
+					stockButton.GreyGradient.Enabled = not occupied
+
+					local restocking = restockEndsAt ~= nil and restockEndsAt > os.time()
+					local empty = not restocking and stockAmount <= 0
+
+					stockButton.Visible = empty or not occupied
+					costDisplay.Visible = empty or not occupied
+					restockTimeDisplay.Visible = empty or not occupied
+					progressDisplay.Visible = not empty and occupied
+					rushDisplay.Visible = restocking
+					statusLabel.Text = restocking and "Ordering" or (not empty and "Selling") or ""
+
+					if empty then
+						costDisplay.AmountLabel.Text = Abbreviate.AbbreviateNumber(restockCost, 1)
+						restockTimeDisplay.AmountLabel.Text = formatTime(restockTime)
+					elseif restocking then
+						progressBar.Fill.FillGradient.Color = ColorSequence.new(Color3.fromRGB(255, 225, 0))
+
+						local lastShownSecond = -1
+						statusTrove:Add(RunService.Heartbeat:Connect(function()
+							local timeLeft = restockEndsAt - workspace:GetServerTimeNow()
+
+							local a = math.clamp(1 - (timeLeft / restockTime), 0, 1)
+							progressBar.Fill.FillGradient.Offset = Vector2.new(math.map(a, 0, 1, -0.5, 0.5), 0)
+
+							local secondsLeft = math.max(0, math.ceil(timeLeft))
+							if secondsLeft ~= lastShownSecond then
+								lastShownSecond = secondsLeft
+								progressBar.AmountLabel.Text = formatTime(secondsLeft)
+							end
+						end))
+					else
+						local progress = math.clamp(stockAmount / restockQuantity, 0, 1)
+						progressBar.Fill.FillGradient.Offset = Vector2.new(math.map(progress, 0, 1, -0.5, 0.5), 0)
+						progressBar.AmountLabel.Text = "x" .. Abbreviate.AbbreviateNumber(stockAmount, 1)
+						progressBar.Fill.FillGradient.Color = ColorSequence.new(Color3.fromRGB(60, 255, 0))
+					end
+				end
+				updateStockStatus()
+				workerTrove:Connect(stockFolder:GetAttributeChangedSignal("RestockEndsAt"), updateStockStatus)
+				workerTrove:Connect(stockFolder:GetAttributeChangedSignal("StockAmount"), updateStockStatus)
+				workerTrove:Connect(stockFolder:GetAttributeChangedSignal("RestockTime"), updateStockStatus)
+				workerTrove:Connect(stockFolder:GetAttributeChangedSignal("RestockCost"), updateStockStatus)
+				workerTrove:Connect(stockFolder:GetAttributeChangedSignal("RestockQuantity"), updateStockStatus)
+			end
+			updateDisplay()
+			displayTrove:Connect(stockFolder:GetAttributeChangedSignal("SlotWorkerId"), updateDisplay)
+
+
+			displayTrove:Connect(stockButton.Activated, function()
+				remotes.RestockRoom:FireServer(roomId, slotIndex)
+			end)
+
+			displayTrove:Connect(rushButton.Activated, function()
+				remotes.RushRestock:FireServer(roomId, slotIndex)
+			end)
+		end
+	end
+	
+	-- custom name display
+	roomNameLabel.Text = roomDef.displayName
+	trove:Add(Observers.observeAttribute(roomCell, "CustomName", function(customName: string)
+		roomNameLabel.Text = customName or roomDef.displayName
+		return function()
+			roomNameLabel.Text = roomDef.displayName
+		end
+	end))
+	
+end
+
 --------------------------------------------------
 -- MAIN --
 --------------------------------------------------
@@ -371,6 +581,11 @@ end
 function TowerController:Init(controllers)
 	self.Controllers = controllers
 
+
+
+	roomManagementFrame.Banner.Close.Activated:Connect(function()
+		TowerController:PromptRoomManagement(nil)
+	end)
 end
 
 function TowerController:Start()

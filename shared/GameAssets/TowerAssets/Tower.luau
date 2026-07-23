@@ -268,6 +268,11 @@ function Tower:CreateResident(residentData: ResidentData): Resident?
 	self.Trove:Add(resident)
 	self.Residents[residentId] = resident
 	
+	local homeRoom = self.Rooms[residentData.homeRoomId]
+	if homeRoom then homeRoom:_UpdateAttributes() end
+	local jobRoom = self.Rooms[residentData.jobRoomId]
+	if jobRoom then jobRoom:_UpdateAttributes() end
+	
 	print("[CreateResident] Created new resident object:", resident)
 	return resident	
 end
@@ -277,21 +282,10 @@ function Tower:UpdateOwnerDisplay()
 	local towerModel: Model = self.TowerFolder:FindFirstChild("Tower")
 	local towerComponents = towerModel:WaitForChild("Components")
 
-	-- 
-	local NUMERALS = {"I", "II", "III"}
-	local playerRank, rankTier = "Bronze", 1 -- TODO: read player ranking info
-	local rankColor = ColorSequence.new{
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(209, 49, 0)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(93, 52, 25))
-	}
-
-
 	-- billboard
 	local billboardGui = towerComponents.OwnerBillboard.BillboardGui
 	local nameLabel = billboardGui.Display.NameLabel
 	local avatarDisplay = billboardGui.Display.AvatarDisplay
-	local rankDisplay = billboardGui.Display.RankDisplay
-	local rankLabel = rankDisplay.RankLabel
 
 	nameLabel.Text = owner.DisplayName
 
@@ -304,11 +298,6 @@ function Tower:UpdateOwnerDisplay()
 		avatarDisplay.Image = playerThumbnail
 		avatarDisplay.Visible = true
 	end
-
-	rankLabel.Text = string.format("%s %s", playerRank, NUMERALS[rankTier])
-	rankLabel.UIGradient.Color = rankColor
-
-	-- tower sign
 
 end
 
@@ -383,13 +372,23 @@ function Tower:GetOccupants(roomId: string): {Resident}
 	return occupants
 end
 
-function Tower:GetWorkerAtSlot(roomId: string, slot: number): Resident?
+function Tower:GetWorkers(roomId: string): {Resident}
+	local workers = {}
 	for _, resident: Resident in self.Residents do
-		if resident.ResidentData.jobRoomId == roomId and resident.ResidentData.jobSlot == slot then
-			return resident
+		if resident.ResidentData.jobRoomId == roomId then
+			table.insert(workers, resident)
 		end
 	end
-	return nil
+	
+	table.sort(workers, function(a, b)
+		return a.ResidentData.jobSlot < b.ResidentData.jobSlot
+	end)
+	
+	return workers
+end
+
+function Tower:GetRoom(roomId: string): Room?
+	return self.Rooms[roomId]
 end
 
 function Tower:Destroy()

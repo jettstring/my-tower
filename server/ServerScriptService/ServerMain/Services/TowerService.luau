@@ -28,7 +28,8 @@ local remotes = {
 	BuildFloor = remotesFolder.Tower.BuildFloor,
 	AssignRoomType = remotesFolder.Tower.AssignRoomType,
 	DemolishRoom = remotesFolder.Tower.DemolishRoom,
-	
+	RestockRoom = remotesFolder.Tower.RestockRoom,
+	RushRestock = remotesFolder.Tower.RushRestock,
 	
 	-- RFs
 	GetTower = remotesFolder.Tower.GetTower,
@@ -42,8 +43,10 @@ type Profile = ProfileTemplate.ProfileTemplate
 type TowerData = ProfileTemplate.TowerData
 type ElevatorData = ProfileTemplate.ElevatorData
 type SerializedRoom = ProfileTemplate.SerializedRoom
+type SlotStockData = ProfileTemplate.SlotStockData
 
 type RoomDefinition = RoomDefinitions.RoomDefinition
+type StockDefinition = RoomDefinitions.StockDefinition
 
 type Tower = Tower.Tower
 type Room = Room.Room
@@ -113,6 +116,27 @@ local function attemptAssignRoomType(player: Player, roomId: string, roomType: s
 	
 	room.Behavior:StartConstruction(randomKey)
 end
+
+local function attemptRestock(player: Player, roomId: string, stockIndex: number)
+	if type(roomId) ~= "string" or type(stockIndex) ~= "number" then return end
+	
+	local tower: Tower = TowerService:GetTower(player)
+	local room: Room = tower and tower.Rooms[roomId]
+	if not room then warn("[attemptRestock] No room found for roomId", roomId) return end
+	local roomData: SerializedRoom = room.RoomData
+	if not roomData then warn("[attemptRestock] No roomData found for room", room) return end
+	if room.BehaviorName ~= "Commercial" then return end
+	
+	local stockSlotData: SlotStockData = roomData.stockSlots[stockIndex]
+	if not stockSlotData then warn("[Restock] invalid SlotStockData", stockIndex) return end
+	
+	local restockTime = TowerService:GetRestockTime(player, roomId, stockIndex)
+	if not restockTime then warn("[Restock] invalid restockTime") return end
+	
+	stockSlotData.restockEndsAt = os.time() + restockTime
+	room:_UpdateAttributes()
+end
+
 
 local function cleanupTower(towerFolder: Folder) 
 	
@@ -198,6 +222,93 @@ function TowerService:RollRoomKeyFromType(player: Player, roomType: string): str
 	return randomRoomKey
 end
 
+
+function TowerService:GetStockEarnings(player: Player, roomId: number, slotIndex: number): number
+	local playerTower: Tower = self:GetTower(player)
+	if not playerTower then warn("[GetStockEarnings] No tower found for player:", player.Name) return 0 end
+	
+	local room: Room = playerTower.Rooms[roomId]
+	local roomData: SerializedRoom = room and room.RoomData
+	if not roomData then warn("[GetStockEarnings] No roomData found for RoomId:", roomId) return 0 end
+	
+	local roomDef: RoomDefinition = RoomDefinitions.ByName[roomData.roomDefKey]
+	if not roomDef then warn("[GetStockEarnings] No roomDef found for roomData.roomDefKey:", roomData.roomDefKey) return 0 end
+	
+	
+	local earnings = 1 * slotIndex
+	
+	-- TODO: earnings modifiers
+
+	return earnings
+end
+
+function TowerService:GetRestockQuantity(player: Player, roomId: number, slotIndex: number): number
+	local playerTower: Tower = self:GetTower(player)
+	if not playerTower then warn("[GetRestockQuantity] No tower found for player:", player.Name) return 0 end
+
+	local room: Room = playerTower.Rooms[roomId]
+	local roomData: SerializedRoom = room and room.RoomData
+	if not roomData then warn("[GetRestockQuantity] No roomData found for RoomId:", roomId) return 0 end
+
+	local roomDef: RoomDefinition = RoomDefinitions.ByName[roomData.roomDefKey]
+	if not roomDef then warn("[GetRestockQuantity] No roomDef found for roomData.roomDefKey:", roomData.roomDefKey) return 0 end
+	if roomDef.roomType ~= "Commercial" then return 0 end
+
+	local stockDef: StockDefinition? = roomDef.stockItems[slotIndex]
+	if not stockDef then warn("[GetRestockQuantity] No stockDef found for slotIndex:", slotIndex) return 0 end
+
+	local quantity = stockDef.quantity or 0
+	
+	-- TODO: quantity modifiers
+
+	return quantity
+end
+
+function TowerService:GetRestockTime(player: Player, roomId: number, slotIndex: number): number
+	local playerTower: Tower = self:GetTower(player)
+	if not playerTower then warn("[GetRestockQuantity] No tower found for player:", player.Name) return 0 end
+
+	local room: Room = playerTower.Rooms[roomId]
+	local roomData: SerializedRoom = room and room.RoomData
+	if not roomData then warn("[GetRestockQuantity] No roomData found for RoomId:", roomId) return 0 end
+
+	local roomDef: RoomDefinition = RoomDefinitions.ByName[roomData.roomDefKey]
+	if not roomDef then warn("[GetRestockQuantity] No roomDef found for roomData.roomDefKey:", roomData.roomDefKey) return 0 end
+	if roomDef.roomType ~= "Commercial" then return 0 end
+
+	local stockDef: StockDefinition? = roomDef.stockItems[slotIndex]
+	if not stockDef then warn("[GetRestockQuantity] No stockDef found for slotIndex:", slotIndex) return 0 end
+
+	local stockTime = stockDef.stockTime or 1
+	
+	-- TODO: time modifiers
+
+	return stockTime
+end
+
+
+function TowerService:GetRestockCost(player: Player, roomId: number, slotIndex: number): number
+	local playerTower: Tower = self:GetTower(player)
+	if not playerTower then warn("[GetRestockQuantity] No tower found for player:", player.Name) return 0 end
+
+	local room: Room = playerTower.Rooms[roomId]
+	local roomData: SerializedRoom = room and room.RoomData
+	if not roomData then warn("[GetRestockQuantity] No roomData found for RoomId:", roomId) return 0 end
+
+	local roomDef: RoomDefinition = RoomDefinitions.ByName[roomData.roomDefKey]
+	if not roomDef then warn("[GetRestockQuantity] No roomDef found for roomData.roomDefKey:", roomData.roomDefKey) return 0 end
+	if roomDef.roomType ~= "Commercial" then return 0 end
+
+	local stockDef: StockDefinition? = roomDef.stockItems[slotIndex]
+	if not stockDef then warn("[GetRestockQuantity] No stockDef found for slotIndex:", slotIndex) return 0 end
+
+	local cost = stockDef.cost or 1
+
+	-- TODO: time modifiers
+
+	return cost
+end
+
 --------------------------------------------------
 -- MAIN --
 --------------------------------------------------
@@ -217,7 +328,7 @@ function TowerService:Start()
 	
 	remotes.BuildFloor.OnServerEvent:Connect(attemptBuildFloor)
 	remotes.AssignRoomType.OnServerEvent:Connect(attemptAssignRoomType)
-	
+	remotes.RestockRoom.OnServerEvent:Connect(attemptRestock)
 end
 
 

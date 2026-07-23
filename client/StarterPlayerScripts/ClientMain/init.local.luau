@@ -6,6 +6,8 @@ CmdrClient:SetActivationKeys({ Enum.KeyCode.F2 , Enum.KeyCode.Semicolon})
 local loadOrder = {
 	{"NotificationController", require(Controllers.NotificationController) },
 	{"TowerController", require(Controllers.TowerController) },
+	{"InteractionController", require(Controllers.InteractionController) },
+	{"TowerViewController", require(Controllers.TowerViewController) },
 }
 
 -- Build named lookup

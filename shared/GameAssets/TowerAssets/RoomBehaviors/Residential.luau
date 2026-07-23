@@ -52,6 +52,8 @@ function Residential.new(room: Room)
 	
 	self.Room = room
 	
+	self:_UpdateAttributes()
+	
 	return self
 end
 
@@ -61,10 +63,15 @@ end
 
 function Residential:_UpdateAttributes()
 	local room: Room = self.Room
+	local tower: Tower = room.Tower
 	local roomData: SerializedRoom = room.RoomData
 	local cellModel = room.CellModel
 	
-	cellModel:SetAttribute("OccupantCount", #room.Tower:GetOccupants(room.RoomId))
+	local residentIds = {}
+	for _, resident in tower:GetOccupants(room.RoomId) do
+		table.insert(residentIds, resident.ResidentData.id)
+	end
+	cellModel:SetAttribute("OccupantIds", table.concat(residentIds, ","))
 end
 
 
@@ -75,7 +82,7 @@ end
 function Residential:Destroy()
 	local room: Room = self.Room
 	local cellModel = room.CellModel
-	cellModel:SetAttribute("OccupantCount", nil)
+	cellModel:SetAttribute("OccupantIds", nil)
 	
 	self.Trove:Destroy()
 end

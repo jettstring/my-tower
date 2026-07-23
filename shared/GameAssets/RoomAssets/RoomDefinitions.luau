@@ -4,8 +4,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local GameAssets = ReplicatedStorage:WaitForChild("GameAssets")
 
-export type StockItem = {} -- TODO
-
 export type Room = {
 	displayName: string,
 	displayImage: string, 
@@ -14,16 +12,21 @@ export type Room = {
 export type Residential = {
 	roomType: "Residential",
 	displayName: string,
-	displayImage: string,
 }
 
 export type Commercial = {
 	roomType: "Commercial",
 	displayName: string,
-	displayImage: string,
 	category: "Food" | "Retail" | "Service" | "Recreation",
-	products: { [string]: StockItem },
-	maxWorkers: number,
+	stockItems: { StockDefinition },
+}
+
+export type StockDefinition = {
+	displayName: string,
+	displayImage: string,
+	cost: number,
+	stockTime: number,
+	quantity: number,
 }
 
 export type RoomDefinition = Residential | Commercial
@@ -43,13 +46,11 @@ local Rooms: { [string]: RoomType } = {
 			["Rustic Apartments"] = {
 				roomType = "Residential",
 				displayName = "Rustic Apartments",
-				displayImage = "",
 			} :: Residential,
 
 			["Modern Apartments"] = {
 				roomType = "Residential",
 				displayName = "Modern Apartments",
-				displayImage = "",
 			} :: Residential,
 		}
 	},
@@ -60,11 +61,15 @@ local Rooms: { [string]: RoomType } = {
 			
 			-- [FOOD] --
 			
-			["Food place #1"] = {
+			["Cafe"] = {
 				roomType = "Commercial",
-				displayName = "Food buiz",
-				displayImage = "",
+				displayName = "Cafe",
 				category = "Food",
+				stockItems = {
+					{ displayName = "Coffee", displayImage = "79575738222080", cost = 10, stockTime = 10, quantity = 50 },
+					{ displayName = "Bagel", displayImage = "110424742559084", cost = 25, stockTime = 10, quantity = 30 },
+					{ displayName = "Sandwich", displayImage = "107040465106427", cost = 50, stockTime = 10, quantity = 15 },
+				}
 			} :: Commercial,
 			
 			-- [RETAIL] -- 
@@ -72,7 +77,6 @@ local Rooms: { [string]: RoomType } = {
 			["Retail place #1"] = {
 				roomType = "Commercial",
 				displayName = "Retail buiz",
-				displayImage = "",
 				category = "Retail",
 			} :: Commercial,
 			
@@ -81,7 +85,6 @@ local Rooms: { [string]: RoomType } = {
 			["Recreation place #1"] = {
 				roomType = "Commercial",
 				displayName = "Recreation buiz",
-				displayImage = "",
 				category = "Recreation",
 			} :: Commercial,
 			
@@ -90,7 +93,6 @@ local Rooms: { [string]: RoomType } = {
 			["Service place #1"] = {
 				roomType = "Commercial",
 				displayName = "Service buiz",
-				displayImage = "",
 				category = "Service",
 			} :: Commercial,
 

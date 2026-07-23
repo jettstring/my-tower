@@ -16,6 +16,7 @@ local TowersFolder = workspace.PlayerTowers
 local TowerAssets = GameAssets.TowerAssets
 local RoomBehaviors = TowerAssets.RoomBehaviors
 local TowerUtil = require(TowerAssets.TowerUtil)
+local Room = require(TowerAssets.Room)
 
 -- Room Assets
 local RoomAssets = GameAssets.RoomAssets
@@ -33,6 +34,8 @@ type ResidentData = ProfileTemplate.ResidentData
 type TowerData = ProfileTemplate.TowerData
 type ElevatorData = ProfileTemplate.ElevatorData
 type SerializedRoom = ProfileTemplate.SerializedRoom
+
+type Room = Room.Room
 
 type RoomDefinition = RoomDefinitions.RoomDefinition
 
@@ -86,7 +89,6 @@ function Resident:_UpdateAttributes()
 	residentFolder:SetAttribute("DreamJob", residentData.dreamJob)
 	residentFolder:SetAttribute("HomeRoomId", residentData.homeRoomId)
 	residentFolder:SetAttribute("JobRoomId", residentData.jobRoomId)
-	residentFolder:SetAttribute("JobSlot", residentData.jobSlot)
 	
 	-- skills
 	for skillName, value in pairs(residentData.skills) do
@@ -108,9 +110,21 @@ function Resident:AssignHome(roomId: string)
 		return
 	end
 	
+	-- validate new room
+	local newRoom: Room = self.Tower.Rooms[roomId]
+	if not newRoom then warn("[AssignHome] Room not found for ID: " .. roomId) return end
+	
+	-- cap check
+	if #self.Tower:GetOccupants(roomId) >= 5 then warn("[AssignHome] Room is full") return end
+	
 	local oldRoomId = residentData.homeRoomId
+	local oldRoom: Room? = oldRoomId and self.Tower.Rooms[oldRoomId]
+	
+	-- update
 	residentData.homeRoomId = roomId
 	self:_UpdateAttributes()
+	if oldRoom then oldRoom:_UpdateAttributes() end
+	newRoom:_UpdateAttributes()
 end
 
 function Resident:AssignJob(roomId: string | nil)
